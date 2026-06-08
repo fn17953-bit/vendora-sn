@@ -269,7 +269,7 @@ function loadNav(){
   <nav class="main-nav" id="mainNav">
     <div class="nav-inner">
       <a href="${r}index.html" class="nav-logo">
-       <img src="assets/images/vendora-logo" alt="Vendora-sn" style="height:100px;width:auto;object-fit:contain;display:block;">
+       <img src="${r}assets/images/vendora-logo.png" alt="Vendora-sn" style="height:38px;width:auto;object-fit:contain;">
       </a>
       <button class="nav-toggle" onclick="toggleMobileNav()" id="navToggle">☰</button>
       <ul class="nav-links" id="navLinks">
