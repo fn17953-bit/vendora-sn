@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vendora-sn — Achetez & Vendez au Sénégal</title>
+<link rel="icon" type="image/png" href="assets/images/logo-vendora.png">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script>(function(){var t=localStorage.getItem("dfm_theme")||"dark";document.documentElement.setAttribute("data-theme",t);})();</script>
+<link rel="stylesheet" href="assets/style.css?v=18">
+</head>
+<body>
+<div id="nav-placeholder"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-parallax-bg">
+    <div class="hero-parallax-orb orb1"></div>
+    <div class="hero-parallax-orb orb2"></div>
+    <div class="hero-parallax-orb orb3"></div>
+  </div>
+  <div class="hero-particles"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-tag reveal" style="position:relative;z-index:1">🛍️ Marketplace Sénégal · Achetez & Vendez Partout</div>
+  <h1 class="hero-title" style="position:relative;z-index:1">VENDORA<span>-SN</span><br>MARKETPLACE</h1>
+  <p class="hero-sub reveal" style="position:relative;z-index:1;transition-delay:.3s">Achète et vends des vêtements, sneakers, montres et accessoires directement entre particuliers. Sans intermédiaire. En toute confiance.</p>
+  <div class="hero-actions reveal" style="position:relative;z-index:1;transition-delay:.45s">
+    <a href="boutique.html" class="btn-red">Explorer les articles</a>
+    <a href="inscription-vendeur.html" class="btn-ghost">Commencer à vendre →</a>
+  </div>
+  <div class="hero-stats reveal" style="position:relative;z-index:1;transition-delay:.6s">
+    <div class="hero-stat"><div class="hero-stat-n" id="statProducts">—</div><div class="hero-stat-l">Articles en vente</div></div>
+    <div class="hero-stat"><div class="hero-stat-n" id="statSellers">—</div><div class="hero-stat-l">Vendeurs actifs</div></div>
+    <div class="hero-stat"><div class="hero-stat-n" id="statOrders">—</div><div class="hero-stat-l">Ventes réalisées</div></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<div style="background:var(--black2);border-top:1px solid var(--border-n);border-bottom:1px solid var(--border-n)">
+  <div class="section" style="padding-top:3.5rem;padding-bottom:3.5rem">
+    <div style="text-align:center;margin-bottom:3rem" class="reveal">
+      <span class="eyebrow">Simple & rapide</span>
+      <h2 class="section-title">Comment ça <span>marche</span> ?</h2>
+    </div>
+    <div class="steps-grid reveal-stagger">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <h3>Tu crées un compte <span style="color:var(--accent,var(--red))">vendeur</span></h3>
+        <p>Inscris-toi en 2 minutes avec ton nom, email, numéro WhatsApp et choisis ton moyen de paiement préféré (Wave ou Orange Money).</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <h3>Tu publies tes <span style="color:var(--accent,var(--red))">articles</span></h3>
+        <p>Ajoute des photos, une description, un prix. L'admin Vendora-sn valide l'annonce avant publication. Ça prend moins de 24h.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <h3>Tu reçois tes <span style="color:var(--accent,var(--red))">commandes</span></h3>
+        <p>Dès qu'un acheteur commande, tu reçois une notification WhatsApp et email. Le paiement se fait directement à toi.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<div class="section" style="padding-top:3.5rem;padding-bottom:1rem">
+  <div style="margin-bottom:2rem" class="reveal">
+    <span class="eyebrow">Toutes les catégories</span>
+    <h2 class="section-title">Explorer par <span>style</span></h2>
+  </div>
+  <div class="cat-grid reveal-stagger">
+    <a href="boutique.html?cat=Vêtements" class="cat-item"><span class="cat-icon">👔</span><span>Vêtements</span></a>
+    <a href="boutique.html?cat=Chaussures" class="cat-item"><span class="cat-icon">👟</span><span>Chaussures</span></a>
+    <a href="boutique.html?cat=Maison & Décoration" class="cat-item"><span class="cat-icon">🛋️</span><span>Maison & Déco</span></a>
+    <a href="boutique.html?cat=Électronique" class="cat-item"><span class="cat-icon">📱</span><span>Électronique</span></a>
+    <a href="boutique.html?cat=Vaisselle" class="cat-item"><span class="cat-icon">🍽️</span><span>Vaisselle</span></a>
+    <a href="boutique.html?cat=Montres & Bijoux" class="cat-item"><span class="cat-icon">⌚</span><span>Montres & Bijoux</span></a>
+    <a href="boutique.html?cat=Sacs & Maroquinerie" class="cat-item"><span class="cat-icon">👜</span><span>Sacs</span></a>
+    <a href="boutique.html?cat=Vintage" class="cat-item"><span class="cat-icon">🕰</span><span>Vintage</span></a>
+    <a href="boutique.html?cat=Sport & Loisirs" class="cat-item"><span class="cat-icon">⚽</span><span>Sport</span></a>
+    <a href="boutique.html" class="cat-item"><span class="cat-icon">✦</span><span>Tout voir</span></a>
+  </div>
+</div>
+
+<!-- FEATURED PRODUCTS -->
+<section class="section">
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2.5rem;flex-wrap:wrap;gap:.75rem" class="reveal">
+    <div>
+      <span class="eyebrow">Sélection du moment</span>
+      <h2 class="section-title">Articles <span>en vedette</span></h2>
+    </div>
+    <a href="boutique.html" class="btn-outline">Voir tout →</a>
+  </div>
+  <div class="products-grid reveal-stagger" id="featuredGrid"></div>
+</section>
+
+<!-- RECENT LISTINGS -->
+<section style="background:var(--black2);border-top:1px solid var(--border-n);padding:1px 0">
+  <div class="section">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2.5rem;flex-wrap:wrap;gap:.75rem" class="reveal">
+      <div>
+        <span class="eyebrow">Dernières annonces</span>
+        <h2 class="section-title">Nouvelles <span>arrivées</span></h2>
+      </div>
+      <a href="boutique.html" class="btn-outline">Voir tout →</a>
+    </div>
+    <div class="products-grid reveal-stagger" id="recentGrid"></div>
+  </div>
+</section>
+
+<!-- CTA VENDEUR -->
+<section style="text-align:center;padding:6rem 2rem;position:relative;overflow:hidden">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(192,57,43,.08),transparent 65%)"></div>
+  <div style="position:relative;z-index:1" class="reveal reveal-scale">
+    <span class="eyebrow">Tu as des articles à vendre ?</span>
+    <h2 class="section-title" style="font-size:clamp(2.5rem,6vw,5rem)">REJOINS<br><span>Vendora-sn</span></h2>
+    <p style="color:var(--muted);font-size:.92rem;max-width:480px;margin:0 auto 2.5rem;line-height:1.8">Inscription gratuite. Publie tes articles en quelques minutes. Reçois les commandes directement sur WhatsApp.</p>
+    <a href="inscription-vendeur.html" class="btn-red" style="font-size:.8rem;padding:1rem 3rem">Créer mon compte vendeur →</a>
+  </div>
+</section>
+
+<!-- TOP SELLERS -->
+<section class="section" style="padding-top:2rem">
+  <div style="margin-bottom:2.5rem" class="reveal">
+    <span class="eyebrow">Communauté</span>
+    <h2 class="section-title">Top <span>vendeurs</span></h2>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.25rem;--stagger:1" class="reveal-stagger" id="sellersGrid"></div>
+</section>
+
+<div id="footer-placeholder"></div>
+<div id="cart-placeholder"></div>
+<div id="toast-container"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="assets/db.js?v=18"></script><script src="assets/auth.js?v=18"></script><script src="assets/config.js?v=18"></script><script src="assets/animations.js?v=18"></script><script src="assets/parallax.js?v=18"></script><script src="assets/ui.js?v=18"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  loadNav();loadFooter();loadCart();
+  const products=DB.getProducts('approved');
+  // Stats
+  document.getElementById('statProducts').textContent=products.length;
+  document.getElementById('statSellers').textContent=DB.getSellers().filter(s=>s.status==='active').length;
+  document.getElementById('statOrders').textContent=DB.getOrders().filter(o=>o.status==='delivered').length;
+  // Featured
+  document.getElementById('featuredGrid').innerHTML=products.filter(p=>p.featured).slice(0,4).map(p=>productCard(p)).join('')||'<p style="color:var(--muted);font-size:.85rem">Aucun article en vedette pour le moment.</p>';
+  // Recent (latest 8)
+  const recent=[...products].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,8);
+  document.getElementById('recentGrid').innerHTML=recent.map(p=>productCard(p)).join('')||'<p style="color:var(--muted);font-size:.85rem">Aucun article pour le moment.</p>';
+  // Top sellers
+  const sellers=DB.getSellers().filter(s=>s.status==='active').slice(0,4);
+  document.getElementById('sellersGrid').innerHTML=sellers.map(s=>{
+    const count=DB.getProductsBySeller(s.id).filter(p=>p.status==='approved').length;
+    const initials=s.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+    return`<div class="seller-card">
+      <div class="seller-avatar-big">${initials}</div>
+      <div class="seller-name">${s.name}</div>
+      <div class="seller-stats">${count} article${count!==1?'s':''} en vente</div>
+      ${s.rating>0?`<div class="seller-rating" style="margin-top:.35rem">★ ${s.rating}/5</div>`:''}
+    </div>`;
+  }).join('')||'<p style="color:var(--muted)">Aucun vendeur pour le moment.</p>';
+});
+</script>
+</body>
+</html>

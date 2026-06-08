@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Tout le monde peut lire les produits approuvés
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    // Utilisateurs
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    // Commandes
+    match /orders/{orderId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    // Notifications
+    match /notifications/{notifId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    // Avis
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

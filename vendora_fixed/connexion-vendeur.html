@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connexion Vendeur — Vendora-sn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script>(function(){var t=localStorage.getItem("dfm_theme")||"dark";document.documentElement.setAttribute("data-theme",t);})();</script>
+<link rel="stylesheet" href="assets/style.css?v=18">
+</head>
+<body>
+<div id="nav-placeholder"></div>
+<div class="auth-page">
+  <div class="auth-box">
+    <h1>MON <span>ESPACE</span></h1>
+    <p class="auth-subtitle">Connecte-toi pour gérer tes articles et commandes.</p>
+    <div id="authError" class="auth-error"></div>
+    <div class="form-group"><label>Email</label><input type="email" id="lEmail" class="form-input" placeholder="ton@email.com" onkeydown="if(event.key==='Enter')login()"></div>
+    <div class="form-group"><label>Mot de passe</label><input type="password" id="lPassword" class="form-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()"></div>
+    <button class="btn-red form-submit" onclick="login()">Se connecter</button>
+    <p class="auth-switch">Pas encore vendeur ? <a href="inscription-vendeur.html">Créer un compte</a></p>
+    <p class="auth-switch" style="margin-top:.5rem"><a href="index.html">← Retour à la boutique</a></p>
+    <div style="margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border-n);font-size:.72rem;color:var(--muted)">
+      <p style="margin-bottom:.35rem"><strong style="color:var(--accent,var(--red));font-family:var(--font-sub)">DÉMO VENDEUR</strong></p>
+      <p>Email : vendeur@demo.com · MDP : demo123</p>
+      <p style="margin-top:.5rem"><strong style="color:var(--gold);font-family:var(--font-sub)">ADMIN</strong></p>
+      <p>Email : admin@vendora-sn.com · MDP : vendora-sn2025</p>
+    </div>
+  </div>
+</div>
+<div id="toast-container"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="assets/db.js?v=18"></script><script src="assets/auth.js?v=18"></script><script src="assets/config.js?v=18"></script><script src="assets/ui.js?v=18"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  loadNav();
+  if(Auth.isLoggedIn()){
+    const u=Auth.getCurrentUser();
+    if(u.role==='seller')window.location.href='vendor/dashboard.html';
+    if(u.role==='admin')window.location.href='admin/dashboard.html';
+  }
+});
+function login(){
+  const email=document.getElementById('lEmail').value.trim();
+  const password=document.getElementById('lPassword').value;
+  const errEl=document.getElementById('authError');
+  errEl.classList.remove('show');
+  if(!email||!password){errEl.textContent='Email et mot de passe requis.';errEl.classList.add('show');return;}
+  const result=Auth.loginSeller(email,password);
+  if(result.error){errEl.textContent=result.error;errEl.classList.add('show');return;}
+  const u=result.user;
+  if(u.role==='admin')window.location.href='admin/dashboard.html';
+  else window.location.href='vendor/dashboard.html';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publier un article — Vendora-sn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script>(function(){var t=localStorage.getItem("dfm_theme")||"dark";document.documentElement.setAttribute("data-theme",t);})();</script>
+<link rel="stylesheet" href="../assets/style.css?v=18">
+</head>
+<body style="padding-top:var(--nav-h)">
+<div id="nav-placeholder"></div>
+<div style="max-width:780px;margin:0 auto;padding:2.5rem 1.5rem">
+
+  <div style="margin-bottom:2rem">
+    <a href="dashboard.html" style="font-size:.68rem;color:var(--accent,var(--red));font-family:var(--font-sub);letter-spacing:.1em">← MON ESPACE</a>
+    <h1 style="font-family:var(--font-display);font-size:2rem;letter-spacing:.05em;margin-top:.5rem" id="pageTitle">PUBLIER UN <span style="color:var(--accent,var(--red))">ARTICLE</span></h1>
+  </div>
+
+  <!-- FREE FIRST PUB BANNER -->
+  <div id="freePubBanner" style="display:none;background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.3);border-radius:4px;padding:.85rem 1.1rem;margin-bottom:1.75rem">
+    <p style="font-size:.82rem;color:#27AE60;font-family:var(--font-sub);letter-spacing:.08em">🎁 TA 1ÈRE PUBLICATION EST GRATUITE ! Aucune commission sur ce premier article.</p>
+  </div>
+
+  <!-- COMMISSION PREVIEW (live) -->
+  <div id="commPreview" style="display:none;background:var(--black2);border:1px solid var(--border-n);border-radius:4px;padding:1rem 1.25rem;margin-bottom:1.75rem">
+    <p style="font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:var(--accent,var(--red));margin-bottom:.65rem;font-family:var(--font-sub)">Commission Vendora-sn à payer</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+      <div id="commDetails" style="font-size:.82rem;color:var(--muted)"></div>
+      <div id="commAmount" style="font-family:var(--font-display);font-size:1.6rem;color:var(--white);letter-spacing:.04em"></div>
+    </div>
+    <p style="font-size:.68rem;color:var(--muted);margin-top:.5rem">⚠️ Si non payée avant publication, l'article sera visible uniquement par toi.</p>
+  </div>
+
+  <input type="hidden" id="editId">
+
+  <!-- PHOTOS -->
+  <div style="background:var(--black2);border:1px solid var(--border-n);padding:1.5rem;border-radius:4px;margin-bottom:1.35rem">
+    <p style="font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--accent,var(--red));margin-bottom:1rem;font-family:var(--font-sub)">Photos de l'article *</p>
+    <div class="photo-upload-grid" id="photoGrid"></div>
+    <p style="font-size:.7rem;color:var(--muted);text-align:center;margin-top:.5rem">Upload depuis ton téléphone/PC OU colle un lien URL (image, GIF...)</p>
+  </div>
+
+  <!-- INFOS -->
+  <div style="background:var(--black2);border:1px solid var(--border-n);padding:1.5rem;border-radius:4px;margin-bottom:1.35rem">
+    <p style="font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--accent,var(--red));margin-bottom:1rem;font-family:var(--font-sub)">Informations</p>
+    <div class="form-row">
+      <div class="form-group"><label>Nom de l'article *</label><input type="text" id="pName" class="form-input" placeholder="ex: Veste Levi's vintage 90s"></div>
+      <div class="form-group"><label>Marque (optionnel)</label><input type="text" id="pBrand" class="form-input" placeholder="ex: Nike, Supreme..."></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Catégorie *</label>
+        <select id="pCat" class="form-select">
+          <optgroup label="Mode & Accessoires">
+            <option>Vêtements</option>
+            <option>Chaussures</option>
+            <option>Sacs & Maroquinerie</option>
+            <option>Montres & Bijoux</option>
+            <option>Vintage</option>
+          </optgroup>
+          <optgroup label="Maison & Décoration">
+            <option>Meubles</option>
+            <option>Décoration</option>
+            <option>Literie & Textiles</option>
+            <option>Luminaires</option>
+          </optgroup>
+          <optgroup label="Électronique">
+            <option>Téléphones & Tablettes</option>
+            <option>Ordinateurs</option>
+            <option>TV & Audio</option>
+            <option>Appareils photo</option>
+            <option>Accessoires électroniques</option>
+          </optgroup>
+          <optgroup label="Cuisine & Maison">
+            <option>Vaisselle</option>
+            <option>Ustensiles de cuisine</option>
+            <option>Électroménager</option>
+          </optgroup>
+          <optgroup label="Autres">
+            <option>Livres & Éducation</option>
+            <option>Sport & Loisirs</option>
+            <option>Bébé & Enfant</option>
+            <option>Voitures & Motos</option>
+            <option>Autre</option>
+          </optgroup>
+          <option>Accessoires</option><option>Sacs</option><option>Bijoux</option><option>Electronique</option><option>Sport</option><option>Autre</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Sous-catégorie</label><input type="text" id="pSubcat" class="form-input" placeholder="ex: Vestes, Sneakers..."></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>État *</label>
+        <select id="pCondition" class="form-select">
+          <option>Neuf</option><option>Quasi neuf</option><option>Très bon état</option><option>Bon état</option><option>État correct</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Taille / Pointure</label><input type="text" id="pSize" class="form-input" placeholder="ex: M, L, 42, Taille unique..."></div>
+    </div>
+    <div class="form-group"><label>Description *</label><textarea id="pDesc" class="form-textarea" rows="4" placeholder="Décris l'article : matière, histoire, défauts éventuels, occasion d'achat..."></textarea></div>
+  </div>
+
+  <!-- NEGOTIABLE -->
+  <div style="background:var(--surface);border:1px solid var(--border);padding:1.5rem;border-radius:var(--r);margin-bottom:1.35rem">
+    <p style="font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--accent,var(--red));margin-bottom:1rem;font-family:var(--fs)">Options</p>
+    <label style="display:flex;align-items:center;gap:.85rem;cursor:pointer;padding:.6rem 0">
+      <div style="position:relative;width:44px;height:24px;flex-shrink:0">
+        <input type="checkbox" id="pNeg" style="opacity:0;width:0;height:0" onchange="document.getElementById('negSlider').style.background=this.checked?'var(--red)':'var(--border2)';document.getElementById('negDot').style.transform=this.checked?'translateX(20px)':'none'">
+        <div id="negSlider" style="position:absolute;cursor:pointer;inset:0;background:var(--border2);border-radius:24px;transition:background .3s"></div>
+        <div id="negDot" style="position:absolute;left:4px;top:4px;width:16px;height:16px;background:white;border-radius:50%;transition:transform .3s"></div>
+      </div>
+      <div>
+        <p style="font-size:.85rem;font-weight:500;margin-bottom:.15rem">Prix négociable</p>
+        <p style="font-size:.72rem;color:var(--text3)">Les acheteurs pourront te faire une offre via WhatsApp. Tu acceptes ou refuses librement.</p>
+      </div>
+    </label>
+  </div>
+
+  <!-- PRIX -->
+  <div style="background:var(--black2);border:1px solid var(--border-n);padding:1.5rem;border-radius:4px;margin-bottom:1.75rem">
+    <p style="font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--accent,var(--red));margin-bottom:1rem;font-family:var(--font-sub)">Prix</p>
+    <div class="form-group">
+      <label>Prix de vente (FCFA) *</label>
+      <input type="number" id="pPrice" class="form-input" placeholder="ex: 15000" min="0" oninput="updateCommPreview(this.value)" style="font-size:1.1rem">
+    </div>
+    <p style="font-size:.72rem;color:var(--muted);line-height:1.65">
+      Le prix affiché aux acheteurs. Le paiement se fait directement à toi via Wave ou Orange Money.
+    </p>
+  </div>
+
+  <div id="formError" style="display:none;background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.28);color:var(--accent,var(--red));padding:.68rem .9rem;font-size:.78rem;margin-bottom:1rem;border-radius:4px"></div>
+
+  <button class="btn-red" style="width:100%;padding:1.1rem;font-size:.85rem;letter-spacing:.25em" onclick="submitArticle()">
+    PUBLIER L'ARTICLE →
+  </button>
+  <p style="text-align:center;font-size:.72rem;color:var(--muted);margin-top:.85rem;line-height:1.65">
+    En publiant, tu acceptes les conditions de Vendora-sn. La publication est automatique — si la commission n'est pas payée, l'article sera visible uniquement par toi.
+  </p>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/db.js?v=18"></script><script src="../assets/auth.js?v=18"></script><script src="../assets/config.js?v=18"></script><script src="../assets/ui.js?v=18"></script>
+<script>
+let photos=[{url:'',label:'Photo principale'},{url:'',label:'Photo secondaire'}];
+let photoTabs=['upload','upload'];
+let currentSeller=null;
+let isFirstPub=false;
+let editMode=false;
+
+document.addEventListener('DOMContentLoaded',()=>{
+  if(!Auth.requireSeller())return;
+  loadNav();
+  const u=Auth.getCurrentUser();
+  currentSeller=DB.getUser(u.id)||u;
+  if(!currentSeller){Auth.logout();return;}
+  isFirstPub=CONFIG.isFirstPublication(currentSeller.id);
+  if(isFirstPub)document.getElementById('freePubBanner').style.display='block';
+  // Check if edit mode
+  const editId=new URLSearchParams(window.location.search).get('edit');
+  if(editId){loadEditMode(editId);}
+  createPhotoWidget('photoGrid',photos,photoTabs);
+});
+
+function loadEditMode(id){
+  const p=DB.getProduct(id);
+  if(!p||p.sellerId!==currentSeller.id){showToast('Article introuvable','error');return;}
+  editMode=true;
+  document.getElementById('editId').value=id;
+  document.getElementById('pageTitle').innerHTML='MODIFIER L\'<span style="color:var(--accent,var(--red))">ARTICLE</span>';
+  document.getElementById('pName').value=p.name||'';
+  document.getElementById('pBrand').value=p.brand||'';
+  document.getElementById('pCat').value=p.category||'Vêtements';
+  document.getElementById('pSubcat').value=p.subcategory||'';
+  document.getElementById('pCondition').value=p.condition||'Bon état';
+  document.getElementById('pSize').value=p.size||'';
+  document.getElementById('pDesc').value=p.description||'';
+  document.getElementById('pPrice').value=p.price||'';
+  if(p.photos)p.photos.slice(0,2).forEach((ph,i)=>{if(ph?.url){photos[i]={url:ph.url,label:ph.label||photos[i].label};photoTabs[i]=ph.url.startsWith('data:')?'upload':'url';}});
+  document.getElementById('pNeg').checked=!!p.negotiable;
+  if(p.negotiable){document.getElementById('negSlider').style.background='var(--red)';document.getElementById('negDot').style.transform='translateX(20px)';}
+  updateCommPreview(p.price);
+  createPhotoWidget('photoGrid',photos,photoTabs);
+}
+
+function updateCommPreview(price){
+  const p=parseInt(price)||0;
+  if(!p){document.getElementById('commPreview').style.display='none';return;}
+  if(isFirstPub&&!editMode){document.getElementById('commPreview').style.display='none';return;}
+  const rate=CONFIG.getCommissionRate(p);
+  const amount=CONFIG.getCommissionAmount(p);
+  document.getElementById('commDetails').textContent=`${rate}% de ${p.toLocaleString('fr-FR')} FCFA`;
+  document.getElementById('commAmount').textContent=`${amount.toLocaleString('fr-FR')} FCFA`;
+  document.getElementById('commPreview').style.display='block';
+}
+
+async function submitArticle(){
+  const name=document.getElementById('pName').value.trim();
+  const price=parseInt(document.getElementById('pPrice').value);
+  const desc=document.getElementById('pDesc').value.trim();
+  const errEl=document.getElementById('formError');errEl.style.display='none';
+  if(!name){errEl.textContent='Le nom de l\'article est requis.';errEl.style.display='block';return;}
+  if(!price||price<=0){errEl.textContent='Le prix est requis.';errEl.style.display='block';return;}
+  if(!desc){errEl.textContent='La description est requise.';errEl.style.display='block';return;}
+  if(!photos[0].url){errEl.textContent='Au moins une photo est requise.';errEl.style.display='block';return;}
+
+  /* Upload vers Cloudinary les fichiers en attente (sélectionnés mais pas encore uploadés) */
+  const publishBtn=document.querySelector('.btn-red[onclick]');
+  if(publishBtn){publishBtn.disabled=true;publishBtn.textContent='⏳ UPLOAD EN COURS...';}
+  try{
+    if(typeof ptFlush_photoGrid==='function')await ptFlush_photoGrid();
+  }catch(err){
+    errEl.textContent='Erreur upload photo : '+err.message;
+    errEl.style.display='block';
+    if(publishBtn){publishBtn.disabled=false;publishBtn.textContent='PUBLIER L\'ARTICLE →';}
+    return;
+  }
+  if(publishBtn){publishBtn.textContent='PUBLIER L\'ARTICLE →';publishBtn.disabled=false;}
+
+  const data={
+    name,price,description:desc,
+    brand:document.getElementById('pBrand').value.trim(),
+    negotiable:document.getElementById('pNeg').checked,
+    category:document.getElementById('pCat').value,
+    subcategory:document.getElementById('pSubcat').value.trim(),
+    condition:document.getElementById('pCondition').value,
+    size:document.getElementById('pSize').value.trim(),
+    photos:photos.filter(ph=>ph.url&&!ph.url.startsWith('blob:')).map(ph=>({url:ph.url,label:ph.label})),
+    sellerId:currentSeller.id,
+    featured:false
+  };
+  const editId=document.getElementById('editId').value;
+  if(editId){
+    DB.updateProduct(editId,{...data});
+    showToast('Article mis à jour ✓','success');
+  } else {
+    const p=DB.addProduct(data);
+    if(p.commissionPaid){
+      showToast('Article publié ! Il est maintenant visible par tous 🎉','success');
+    } else {
+      showToast(`Article enregistré ! Commission de ${formatPrice(p.commissionAmount)} à payer pour le publier.`,'success');
+    }
+  }
+  setTimeout(()=>window.location.href='dashboard.html',1500);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Articles — Admin Vendora-sn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script>(function(){var t=localStorage.getItem("dfm_theme")||"dark";document.documentElement.setAttribute("data-theme",t);})();</script>
+<link rel="stylesheet" href="../assets/style.css?v=18">
+</head>
+<body>
+<div class="admin-layout">
+  <div id="admin-sidebar-placeholder"></div>
+  <main class="admin-main">
+    <div class="admin-header"><h1>ARTICLES</h1></div>
+    <div class="search-bar">
+      <input type="text" class="search-input" id="searchInput" placeholder="Nom, vendeur..." oninput="filter()">
+      <select class="status-select" id="statusFilter" onchange="filter()">
+        <option value="all">Tous les statuts</option>
+        <option value="approved">En ligne</option>
+        <option value="pending_payment">Attente paiement</option>
+        <option value="sold">Vendus</option>
+      </select>
+      <select class="status-select" id="catFilter" onchange="filter()">
+        <option value="">Toutes catégories</option>
+        <option>Vêtements</option><option>Chaussures</option><option>Vintage</option><option>Montres</option><option>Accessoires</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Photo</th><th>Nom</th><th>Vendeur</th><th>Prix</th><th>Commission / Code TX</th><th>Boost</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+<div id="toast-container"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/db.js?v=18"></script><script src="../assets/auth.js?v=18"></script><script src="../assets/config.js?v=18"></script><script src="../assets/ui.js?v=18"></script><script src="admin-ui.js?v=18"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  if(!Auth.requireAdmin())return;
+  loadAdminSidebar('articles');
+  // Check URL filter
+  const s=new URLSearchParams(window.location.search).get('status');
+  if(s)document.getElementById('statusFilter').value=s;
+  filter();
+});
+function filter(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const status=document.getElementById('statusFilter').value;
+  const cat=document.getElementById('catFilter').value;
+  let products=DB.getAllProducts();
+  if(q)products=products.filter(p=>p.name.toLowerCase().includes(q)||(DB.getUser(p.sellerId)?.name||'').toLowerCase().includes(q));
+  if(status&&status!=='all')products=products.filter(p=>p.status===status);
+  if(cat)products=products.filter(p=>p.category===cat);
+  renderTable(products);
+}
+const statusLabels={approved:'En ligne',pending_payment:'Attente paiement',pending_validation:'Code TX soumis',sold:'Vendu'};
+const statusBadges={approved:'badge-approved',pending_payment:'badge-pending',pending_validation:'badge-pending',sold:'badge-sold'};
+function renderTable(products){
+  const tbody=document.getElementById('tbody');
+  if(!products.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:3rem">Aucun article</td></tr>';return;}
+  tbody.innerHTML=products.map(p=>{
+    const seller=DB.getUser(p.sellerId);
+    const photo=p.photos?.[0]?.url;
+    return`<tr>
+      <td>${photo?`<img src="${photo}" style="width:38px;height:48px;object-fit:cover;border-radius:3px;border:1px solid var(--border-n)">`:`<div style="width:38px;height:48px;background:var(--black3);border:1px solid var(--border-n);border-radius:3px;display:flex;align-items:center;justify-content:center;opacity:.3">📦</div>`}</td>
+      <td style="font-family:var(--font-sub);font-weight:600;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</td>
+      <td style="color:var(--muted);font-size:.75rem">${seller?.name||'—'}<br><span style="font-size:.65rem;color:var(--muted)">${seller?.phone||''}</span></td>
+      <td style="font-size:.75rem">${p.category}</td>
+      <td style="color:var(--accent,var(--red));font-family:var(--font-display);letter-spacing:.04em">${formatPrice(p.price)}</td>
+      <td style="font-size:.75rem">${p.isFirstPub?'<span style="color:var(--green2);font-family:var(--font-sub)">Gratuit</span>':p.commissionPaid?`<span style="color:var(--green2);font-family:var(--font-sub)">Payé (${formatPrice(p.commissionAmount)})</span>`:`<span style="color:var(--gold);font-family:var(--font-sub)">${formatPrice(p.commissionAmount||0)} due</span>`}</td>
+      <td><span class="badge ${statusBadges[p.status]||'badge-pending'}">${statusLabels[p.status]||p.status}</span></td>
+      <td style="color:var(--muted);font-size:.75rem">${p.views||0}</td>
+      <td style="white-space:nowrap">
+        ${p.status==='pending_payment'?`<button class="action-btn approve" onclick="markCommPaid(${p.id})">✓ Paiement reçu</button>`:''}
+        ${p.status==='approved'?`<button class="action-btn" onclick="setStatus(${p.id},'sold')">Marquer vendu</button>`:''}
+        ${p.status!=='approved'&&p.status!=='pending_payment'?`<button class="action-btn approve" onclick="setStatus(${p.id},'approved')">Remettre en ligne</button>`:''}
+        <button class="action-btn danger" onclick="deleteArt(${p.id})">Supprimer</button>
+      </td>
+    </tr>`;}).join('');
+}
+function markCommPaid(id){DB.updateProduct(id,{status:'approved',commissionPaid:true});showToast('Paiement confirmé — Article publié ✓','success');filter();}
+function setStatus(id,s){DB.updateProduct(id,{status:s});showToast('Statut mis à jour','success');filter();}
+function activateBoost(id){
+  const p=DB.getProduct(id);if(!p)return;
+  const plan=CONFIG.BOOST_PLANS.find(x=>x.id===p.boostPlan);if(!plan)return;
+  const expiry=new Date();expiry.setDate(expiry.getDate()+plan.days);
+  DB.updateProduct(id,{boostPaid:true,boostPendingValidation:false,boostExpiry:expiry.toISOString(),featured:true});
+  showToast('Boost activé ⚡ — '+plan.label,'success');filter();
+}
+function deleteArt(id){if(!confirm('Supprimer cet article ?'))return;DB.deleteProduct(id);filter();showToast('Supprimé','success');}
+</script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Devenir Vendeur — Vendora-sn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script>(function(){var t=localStorage.getItem("dfm_theme")||"dark";document.documentElement.setAttribute("data-theme",t);})();</script>
+<link rel="stylesheet" href="assets/style.css?v=18">
+</head>
+<body>
+<div id="nav-placeholder"></div>
+<div class="auth-page" style="align-items:flex-start;padding-top:calc(var(--nav-h) + 2rem)">
+  <div style="max-width:560px;width:100%;margin:0 auto">
+    <div class="auth-box">
+      <h1 style="font-size:2.2rem">DEVENIR <span>VENDEUR</span></h1>
+      <p class="auth-subtitle">Crée ton compte et commence à vendre tes articles sur Vendora-sn. Inscription 100% gratuite.</p>
+
+      <!-- Commission info banner -->
+      <div style="background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.25);border-radius:4px;padding:1rem 1.1rem;margin-bottom:1.75rem;font-size:.78rem;line-height:1.8;color:var(--light)">
+        <strong style="color:var(--accent,var(--red));display:block;margin-bottom:.35rem;font-family:var(--font-sub);font-size:.85rem;letter-spacing:.08em">💡 COMMISSION Vendora-sn</strong>
+        <div style="display:flex;flex-direction:column;gap:.5rem;font-size:.78rem">
+          <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:.25rem">
+            <span style="color:var(--muted)">0 – 3 000 FCFA</span><span><strong style="color:var(--green2)">0%</strong> de commission (Gratuit)</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:.25rem">
+            <span style="color:var(--muted)">3 001 – 5 000 FCFA</span><span><strong style="color:var(--green2)">1%</strong> de commission</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:.25rem">
+            <span style="color:var(--muted)">5 001 – 15 000 FCFA</span><span><strong style="color:var(--green2)">1.5%</strong> de commission</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:.25rem">
+            <span style="color:var(--muted)">15 001 – 30 000 FCFA</span><span><strong style="color:var(--green2)">2%</strong> de commission</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:.25rem">
+            <span style="color:var(--muted)">+30 000 FCFA</span><span><strong style="color:var(--green2)">2.5%</strong> de commission</span>
+          </div>
+        </div>
+        <div style="margin-top:.6rem;padding-top:.6rem;border-top:1px solid rgba(192,57,43,.2);color:var(--green2);font-size:.75rem">
+          🎁 <strong>Ta 1ère publication est GRATUITE</strong> — aucune commission sur le premier article.
+        </div>
+        <div style="margin-top:.35rem;font-size:.72rem;color:var(--muted)">
+          ⚠️ La commission est due avant publication. Si non payée, l'article reste en attente et visible uniquement par toi.
+        </div>
+      </div>
+
+      <div id="authError" class="auth-error"></div>
+
+      <div class="form-row">
+        <div class="form-group"><label>Prénom & Nom *</label><input type="text" id="rName" class="form-input" placeholder="Amadou Diallo"></div>
+        <div class="form-group"><label>Email *</label><input type="email" id="rEmail" class="form-input" placeholder="ton@email.com"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Téléphone *</label><input type="tel" id="rPhone" class="form-input" placeholder="+221 77 xxx xx xx"></div>
+        <div class="form-group"><label>WhatsApp (pour les commandes) *</label><input type="tel" id="rWhatsapp" class="form-input" placeholder="+221 77 xxx xx xx"></div>
+      </div>
+      <div class="form-group"><label>Mot de passe *</label><input type="password" id="rPassword" class="form-input" placeholder="Minimum 6 caractères"></div>
+      <div class="form-group"><label>Confirmer le mot de passe *</label><input type="password" id="rPassword2" class="form-input" placeholder="Répéter le mot de passe"></div>
+      <div class="form-group"><label>Bio / Description (optionnel)</label><textarea id="rBio" class="form-input" rows="2" placeholder="Décris ton style, tes spécialités..."></textarea></div>
+
+      <!-- Payment methods -->
+      <div class="form-group">
+        <label>Moyens de paiement acceptés *</label>
+        <div class="payment-checkboxes">
+          <label class="pay-check-opt">
+            <input type="checkbox" id="pmWave" value="wave">
+            <span>🌊 <strong>Wave</strong> — Numéro Wave :</span>
+            <input type="tel" id="waveNum" class="form-input" placeholder="+221 77..." style="margin-left:.5rem;flex:1;padding:.38rem .65rem;font-size:.8rem">
+          </label>
+          <label class="pay-check-opt">
+            <input type="checkbox" id="pmOrange" value="orange">
+            <span>🟠 <strong>Orange Money</strong> — Numéro OM :</span>
+            <input type="tel" id="omNum" class="form-input" placeholder="+221 77..." style="margin-left:.5rem;flex:1;padding:.38rem .65rem;font-size:.8rem">
+          </label>
+          <label class="pay-check-opt pay-check-livraison">
+            <input type="checkbox" id="pmLivraison" value="livraison" checked disabled>
+            <span>🚚 <strong>Paiement à la livraison</strong></span>
+            <span class="livraison-note">L'acheteur paie en espèces à la réception du colis</span>
+          </label>
+        </div>
+      </div>
+
+      <div style="background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.2);border-radius:var(--r);padding:.85rem 1rem;margin-bottom:1rem">
+        <p style="font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);font-family:var(--font-sub);font-weight:600;margin-bottom:.5rem">🛡️ CHARTE VENDEUR VENDORA-SN</p>
+        <ul style="font-size:.72rem;color:var(--muted);line-height:1.9;padding-left:1rem">
+          <li>Je publie uniquement des articles que je possède réellement</li>
+          <li>Mes photos correspondent à l'état réel de l'article</li>
+          <li>J'honore mes commandes confirmées</li>
+          <li>En cas d'annulation répétée sans motif valable, mon compte peut être suspendu</li>
+        </ul>
+        <label style="display:flex;align-items:flex-start;gap:.5rem;margin-top:.65rem;cursor:pointer;font-size:.78rem;color:var(--text2)">
+          <input type="checkbox" id="charteAccept" style="margin-top:.2rem;accent-color:var(--accent);flex-shrink:0"> J'accepte la charte vendeur et les conditions d'utilisation de Vendora-sn
+        </label>
+      </div>
+      <button class="btn-red form-submit" onclick="registerSeller()">Créer mon compte vendeur</button>
+      <p class="auth-switch">Déjà un compte ? <a href="connexion-vendeur.html">Se connecter</a></p>
+      <p class="auth-switch" style="margin-top:.5rem"><a href="index.html">← Retour à la boutique</a></p>
+    </div>
+  </div>
+</div>
+<div id="toast-container"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="assets/db.js?v=18"></script><script src="assets/auth.js?v=18"></script><script src="assets/config.js?v=18"></script><script src="assets/ui.js?v=18"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  loadNav();
+  if(Auth.isLoggedIn()){
+    const u=Auth.getCurrentUser();
+    if(u.role==='seller')window.location.href='vendor/dashboard.html';
+    if(u.role==='admin')window.location.href='admin/dashboard.html';
+  }
+});
+function registerSeller(){
+  const name=document.getElementById('rName').value.trim();
+  const email=document.getElementById('rEmail').value.trim();
+  const phone=document.getElementById('rPhone').value.trim();
+  const whatsapp=document.getElementById('rWhatsapp').value.trim();
+  const password=document.getElementById('rPassword').value;
+  const password2=document.getElementById('rPassword2').value;
+  const bio=document.getElementById('rBio').value.trim();
+  const errEl=document.getElementById('authError');
+  errEl.classList.remove('show');
+
+  if(!name||!email||!phone||!whatsapp||!password){errEl.textContent='Tous les champs obligatoires doivent être remplis.';errEl.classList.add('show');return;}
+  if(password!==password2){errEl.textContent='Les mots de passe ne correspondent pas.';errEl.classList.add('show');return;}
+
+  const paymentMethods=[];
+  const waveNum=document.getElementById('waveNum').value.trim();
+  const omNum=document.getElementById('omNum').value.trim();
+  if(document.getElementById('pmWave').checked){
+    if(!waveNum){errEl.textContent='Entrez votre numéro Wave.';errEl.classList.add('show');return;}
+    paymentMethods.push('wave');
+  }
+  if(document.getElementById('pmOrange').checked){
+    if(!omNum){errEl.textContent='Entrez votre numéro Orange Money.';errEl.classList.add('show');return;}
+    paymentMethods.push('orange');
+  }
+  if(document.getElementById('pmLivraison').checked){
+    paymentMethods.push('livraison');
+  }
+  if(!paymentMethods.includes("livraison"))paymentMethods.push("livraison");
+  if(!paymentMethods.length){errEl.textContent='Choisissez au moins un moyen de paiement.';errEl.classList.add('show');return;}
+
+  if(!document.getElementById('charteAccept')?.checked){errEl.textContent='Veuillez accepter la charte vendeur.';errEl.classList.add('show');return;}
+  const result=Auth.registerSeller({name,email,phone,whatsapp,password,bio,paymentMethods,waveNumber:waveNum,orangeNumber:omNum});
+  if(result.error){errEl.textContent=result.error;errEl.classList.add('show');return;}
+  showToast('Compte créé ! Bienvenue sur Vendora-sn 🎉','success');
+  setTimeout(()=>window.location.href='vendor/dashboard.html',1200);
+}
+</script>
+</body>
+</html>

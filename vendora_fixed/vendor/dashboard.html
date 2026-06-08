@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon Espace Vendeur — Vendora-sn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script>(function(){var t=localStorage.getItem("dfm_theme")||"dark";document.documentElement.setAttribute("data-theme",t);})();</script>
+<link rel="stylesheet" href="../assets/style.css?v=18">
+</head>
+<body style="padding-top:var(--nav-h)">
+<div id="nav-placeholder"></div>
+
+<div class="seller-dashboard">
+  <div class="sdash-header">
+    <div style="max-width:1380px;margin:0 auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem">
+        <div>
+          <p style="font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;color:var(--accent,var(--red));margin-bottom:.3rem;font-family:var(--font-sub)">Espace Vendeur</p>
+          <h1 class="sdash-title">MON <span>ESPACE</span></h1>
+        </div>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+          <a href="ajouter-article.html" class="btn-red">+ Publier un article</a>
+          <button onclick="Auth.logout()" class="btn-ghost" style="font-size:.68rem">Déconnexion</button>
+        </div>
+      </div>
+      <!-- Stats -->
+      <div class="sdash-stats" style="margin-top:1.5rem">
+        <div class="sdash-stat">
+          <div class="sdash-stat-label">Total articles</div>
+          <div class="sdash-stat-value" id="statTotal">0</div>
+          <div id="statFreeNote" style="display:none;font-size:.58rem;color:var(--green);font-family:var(--font-sub);letter-spacing:.08em;margin-top:.2rem">dont 1 gratuit ✓</div>
+        </div>
+        <div class="sdash-stat"><div class="sdash-stat-label">En ligne</div><div class="sdash-stat-value" id="statOnline" style="color:var(--green)">0</div></div>
+        <div class="sdash-stat"><div class="sdash-stat-label">En attente</div><div class="sdash-stat-value" id="statPending" style="color:var(--gold)">0</div></div>
+        <div class="sdash-stat"><div class="sdash-stat-label">Commandes</div><div class="sdash-stat-value" id="statOrders">0</div></div>
+        <div class="sdash-stat"><div class="sdash-stat-label">Vendus</div><div class="sdash-stat-value" id="statSold">0</div></div>
+        <div class="sdash-stat">
+          <div class="sdash-stat-label">Chiffre d'affaires</div>
+          <div class="sdash-stat-value" id="statRevenu" style="color:var(--accent);font-size:1rem">0 F</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1380px;margin:0 auto;padding:2rem 3rem">
+    <!-- Commission banner -->
+    <div id="commissionBanner" style="display:none;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.3);border-radius:4px;padding:1rem 1.25rem;margin-bottom:1.75rem">
+      <p style="font-size:.82rem;color:var(--gold);font-family:var(--font-sub);font-weight:700;margin-bottom:.35rem">⚠️ ARTICLES EN ATTENTE DE PAIEMENT</p>
+      <p style="font-size:.78rem;color:var(--muted);line-height:1.7">Certains de tes articles ne sont pas encore visibles par les acheteurs car la commission Vendora-sn n'a pas été payée. Paie la commission pour les publier.</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="sdash-nav">
+      <button class="sdash-tab active" onclick="showTab('articles')">Mes articles</button>
+      <button class="sdash-tab" onclick="showTab('commandes')">Commandes <span id="newOrdersBadge" style="display:none;background:var(--red);color:#fff;border-radius:50%;width:16px;height:16px;font-size:.55rem;display:inline-flex;align-items:center;justify-content:center;margin-left:.35rem"></span></button>
+      <button class="sdash-tab" onclick="showTab('notifications')">Notifications <span id="unreadBadge"></span></button>
+      <button class="sdash-tab" onclick="showTab('profil')">Mon profil</button>
+      <button class="sdash-tab" onclick="showTab('boost')">🚀 Booster</button>
+    </div>
+
+    <!-- ARTICLES TAB -->
+    <div class="sdash-panel active" id="tab-articles">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.35rem;flex-wrap:wrap;gap:.65rem">
+        <h2 style="font-family:var(--font-display);font-size:1.4rem;letter-spacing:.05em">MES <span style="color:var(--accent,var(--red))">ARTICLES</span></h2>
+        <a href="ajouter-article.html" class="btn-red" style="font-size:.68rem;padding:.52rem 1.2rem">+ Nouvel article</a>
+      </div>
+      <div id="articlesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.1rem"></div>
+    </div>
+
+    <!-- COMMANDES TAB -->
+    <div class="sdash-panel" id="tab-commandes">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;letter-spacing:.05em;margin-bottom:1.35rem">COMMANDES <span style="color:var(--accent,var(--red))">REÇUES</span></h2>
+      <div id="ordersContainer"></div>
+    </div>
+
+    <!-- NOTIFICATIONS TAB -->
+    <div class="sdash-panel" id="tab-notifications">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;letter-spacing:.05em;margin-bottom:1.35rem">NOTIFICATIONS</h2>
+      <div id="notifsContainer"></div>
+    </div>
+
+    <!-- PROFIL TAB -->
+    <div class="sdash-panel" id="tab-profil">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;letter-spacing:.05em;margin-bottom:1.35rem">MON <span style="color:var(--accent,var(--red))">PROFIL</span></h2>
+      <div style="background:var(--black2);border:1px solid var(--border-n);padding:1.75rem;border-radius:4px;max-width:560px">
+        <div id="profilContent"></div>
+        <button class="btn-red" style="margin-top:1.25rem" onclick="saveProfile()">Sauvegarder</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- BOOST TAB -->
+    <div class="sdash-panel" id="tab-boost">
+      <h2 style="font-family:var(--fd);font-size:1.4rem;letter-spacing:.05em;margin-bottom:.65rem">BOOSTER <span style="color:var(--accent,var(--red))">UN ARTICLE</span></h2>
+      <div style="display:flex;gap:.65rem;flex-wrap:wrap;margin-bottom:1.25rem">
+        <div style="background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.2);border-radius:var(--r);padding:.65rem 1rem;font-size:.72rem;color:var(--text2)">🚀 <strong>Position prioritaire</strong> dans les résultats</div>
+        <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--r);padding:.65rem 1rem;font-size:.72rem;color:var(--text2)">⚡ <strong>Badge BOOSTÉ</strong> visible par tous</div>
+        <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:var(--r);padding:.65rem 1rem;font-size:.72rem;color:var(--text2)">📈 <strong>+3x de vues</strong> en moyenne</div>
+      </div>
+      <p style="color:var(--text3);font-size:.85rem;line-height:1.75;margin-bottom:1.75rem">
+        Booste ton article pour qu'il apparaisse en 1ère position et porte le badge <strong style="color:var(--accent,var(--red))">⚡ BOOSTÉ</strong>. 
+        Le paiement se fait via Wave ou Orange Money, puis tu entres le code de transaction pour validation.
+      </p>
+      <div id="boostArticleSelect" style="margin-bottom:1.75rem">
+        <label style="font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent,var(--red));display:block;margin-bottom:.65rem;font-family:var(--fs)">Choisis l'article à booster</label>
+        <select id="boostProductSel" class="form-select" onchange="renderBoostPlans()" style="max-width:400px">
+          <option value="">-- Sélectionne un article --</option>
+        </select>
+      </div>
+      <div id="boostPlans" style="display:none">
+        <p style="font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent,var(--red));margin-bottom:.85rem;font-family:var(--fs)">Choisir la durée du boost</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.75rem" id="boostPlanGrid"></div>
+        <div id="boostPaySection" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:1.35rem">
+          <p style="font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent,var(--red));margin-bottom:.85rem;font-family:var(--fs)">Payer le boost</p>
+          <p style="font-size:.82rem;color:var(--text3);margin-bottom:.85rem">Montant à payer : <strong id="boostAmountDisplay" style="color:var(--text);font-size:1rem"></strong></p>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.1rem">
+            <a id="boostWaveBtn" href="${CONFIG.WAVE_URL}" target="_blank" class="wave-btn" style="flex:1;text-align:center">🌊 Payer via Wave</a>
+            <div style="flex:1;background:rgba(255,102,0,.1);border:1px solid rgba(255,102,0,.25);border-radius:var(--r);padding:.88rem;font-size:.78rem;color:var(--text3)">
+              🟠 <strong style="color:#FF6600">Orange Money</strong><br>Envoyer au <strong style="color:var(--text)">${CONFIG.OM_NUMBER}</strong>
+            </div>
+          </div>
+          <div style="margin-bottom:1rem">
+            <label style="font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent,var(--red));display:block;margin-bottom:.45rem;font-family:var(--fs)">Code de transaction *</label>
+            <input type="text" id="boostTxCode" class="form-input" placeholder="ex: TXN123456789 ou code Wave/OM">
+            <p style="font-size:.68rem;color:var(--text3);margin-top:.35rem">Entre le code de transaction reçu par SMS après paiement. L'admin vérifiera avant activation.</p>
+          </div>
+          <button class="btn-red" style="width:100%" onclick="submitBoost()">Soumettre la demande de boost →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Annulation Modal -->
+<div class="modal-bg" id="cancelModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head"><h2>ANNULER LA <span>COMMANDE</span></h2><button class="cd-close" onclick="document.getElementById('cancelModal').classList.remove('open')">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:1.1rem;line-height:1.6">⚠️ Cette action est <strong style="color:var(--text)">irréversible</strong>. L'article sera remis en vente automatiquement. Un motif obligatoire sera visible par l'admin.</p>
+      <input type="hidden" id="cancelOrderRef">
+      <label style="font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,var(--red));font-family:var(--font-sub);display:block;margin-bottom:.65rem">Motif de l'annulation *</label>
+      <div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem">
+        <label style="display:flex;align-items:center;gap:.55rem;padding:.55rem .75rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;font-size:.78rem"><input type="radio" name="cancelReason" value="Article endommagé ou perdu" style="accent-color:var(--accent)"> Article endommagé ou perdu</label>
+        <label style="display:flex;align-items:center;gap:.55rem;padding:.55rem .75rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;font-size:.78rem"><input type="radio" name="cancelReason" value="Rupture de stock" style="accent-color:var(--accent)"> Rupture de stock / article non disponible</label>
+        <label style="display:flex;align-items:center;gap:.55rem;padding:.55rem .75rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;font-size:.78rem"><input type="radio" name="cancelReason" value="Acheteur injoignable" style="accent-color:var(--accent)"> Acheteur injoignable après 48h</label>
+        <label style="display:flex;align-items:center;gap:.55rem;padding:.55rem .75rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;font-size:.78rem"><input type="radio" name="cancelReason" value="Erreur prix ou description" style="accent-color:var(--accent)"> Erreur sur le prix ou la description</label>
+        <label style="display:flex;align-items:center;gap:.55rem;padding:.55rem .75rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;font-size:.78rem"><input type="radio" name="cancelReason" value="Livraison impossible" style="accent-color:var(--accent)"> Problème de livraison impossible</label>
+        <label style="display:flex;align-items:center;gap:.55rem;padding:.55rem .75rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;font-size:.78rem"><input type="radio" name="cancelReason" value="Acheteur a demandé l'annulation" style="accent-color:var(--accent)"> Acheteur a demandé l'annulation</label>
+      </div>
+      <textarea id="cancelDetail" class="form-input" rows="2" placeholder="Précisions supplémentaires (optionnel)..." style="margin-bottom:1rem;resize:none;font-size:.8rem"></textarea>
+      <button onclick="confirmCancel()" class="btn-danger" style="width:100%;padding:.88rem;font-size:.72rem;letter-spacing:.15em">Confirmer l'annulation</button>
+    </div>
+  </div>
+</div>
+
+<!-- Commission Payment Modal -->
+<div class="modal-bg" id="commModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head"><h2>PAYER LA <span>COMMISSION</span></h2><button class="cd-close" onclick="document.getElementById('commModal').classList.remove('open')">✕</button></div>
+    <div class="modal-body" id="commModalBody"></div>
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal-bg" id="deleteModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-head"><h2>SUPPRIMER ?</h2><button class="cd-close" onclick="document.getElementById('deleteModal').classList.remove('open')">✕</button></div>
+    <div class="modal-body"><p style="color:var(--muted);margin-bottom:1.35rem">Cette action est irréversible.</p><input type="hidden" id="deleteId"><div style="display:flex;gap:.85rem"><button class="btn-danger" style="flex:1" onclick="confirmDelete()">Supprimer</button><button class="btn-ghost" onclick="document.getElementById('deleteModal').classList.remove('open')">Annuler</button></div></div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/db.js?v=18"></script><script src="../assets/auth.js?v=18"></script><script src="../assets/config.js?v=18"></script><script src="../assets/ui.js?v=18"></script>
+<script>
+let currentSeller=null;
+
+document.addEventListener('DOMContentLoaded',()=>{
+  if(!Auth.requireSeller())return;
+  loadNav();
+  const u=Auth.getCurrentUser();
+  // Try DB first, fall back to session data if localStorage was reset
+  currentSeller=DB.getUser(u.id)||u;
+  if(!currentSeller){Auth.logout();return;}
+  renderAll();
+});
+
+function renderAll(){
+  renderStats();
+  renderArticles();
+  renderOrders();
+  renderNotifications();
+  renderProfil();
+}
+
+function renderStats(){
+  const products=DB.getProductsBySeller(currentSeller.id);
+  const orders=DB.getOrdersBySeller(currentSeller.id);
+
+  // Tous les articles comptent, y compris le 1er gratuit
+  const total=products.length;
+  const online=products.filter(p=>p.status==='approved').length;
+  const pendingPayment=products.filter(p=>p.status==='pending_payment').length;
+  const sold=products.filter(p=>p.status==='sold').length;
+  const hasFree=products.some(p=>p.isFirstPub&&p.commissionPaid);
+
+  // Chiffre d'affaires = somme des commandes livrées ou confirmées
+  const revenu=orders
+    .filter(o=>o.status==='delivered'||o.status==='confirmed'||o.status==='shipped')
+    .reduce((sum,o)=>sum+(parseInt(o.total)||0),0);
+
+  document.getElementById('statTotal').textContent=total;
+  document.getElementById('statOnline').textContent=online;
+  document.getElementById('statPending').textContent=pendingPayment;
+  document.getElementById('statOrders').textContent=orders.length;
+  document.getElementById('statSold').textContent=sold;
+  document.getElementById('statRevenu').textContent=revenu>0?formatPrice(revenu):'0 F';
+
+  // Badge "1er article gratuit"
+  const freeNote=document.getElementById('statFreeNote');
+  if(freeNote) freeNote.style.display=hasFree?'block':'none';
+
+  if(pendingPayment>0)document.getElementById('commissionBanner').style.display='block';
+
+  const newOrders=orders.filter(o=>o.status==='pending').length;
+  const badge=document.getElementById('newOrdersBadge');
+  if(newOrders>0){badge.style.display='inline-flex';badge.textContent=newOrders;}
+}
+
+function renderArticles(){
+  const products=DB.getProductsBySeller(currentSeller.id);
+  const grid=document.getElementById('articlesGrid');
+  if(!products.length){
+    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--muted)">
+      <p style="font-family:var(--font-display);font-size:1.5rem;letter-spacing:.05em;margin-bottom:1rem">AUCUN <span style="color:var(--accent,var(--red))">ARTICLE</span></p>
+      <a href="ajouter-article.html" class="btn-red">Publier mon premier article gratuitement</a>
+    </div>`;
+    return;
+  }
+  grid.innerHTML=products.map(p=>{
+    const isPendingPayment=p.status==='pending_payment';
+    const isSold=p.status==='sold';
+    const photo=p.photos?.[0]?.url;
+    return`<div style="background:var(--black2);border:1px solid ${isPendingPayment?'rgba(201,168,76,.4)':isSold?'var(--border-n)':'var(--border-n)'};border-radius:4px;overflow:hidden;position:relative">
+      ${isPendingPayment?`<div style="position:absolute;top:0;left:0;right:0;background:rgba(201,168,76,.12);border-bottom:1px solid rgba(201,168,76,.3);padding:.45rem .75rem;font-size:.62rem;color:var(--gold);font-family:var(--font-sub);letter-spacing:.08em;z-index:2">
+        ⚠️ EN ATTENTE DE PAIEMENT — Non visible par les acheteurs
+      </div>`:isSold?`<div style="position:absolute;top:0;left:0;right:0;background:rgba(39,174,96,.1);border-bottom:1px solid rgba(39,174,96,.3);padding:.45rem .75rem;font-size:.62rem;color:#27AE60;font-family:var(--font-sub);z-index:2">✓ VENDU</div>`:''}
+      <div style="height:180px;background:var(--black3);overflow:hidden;margin-top:${isPendingPayment||isSold?'30px':'0'}">
+        ${photo?`<img src="${photo}" style="width:100%;height:100%;object-fit:cover">`:`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2.5rem;opacity:.15">📦</div>`}
+      </div>
+      <div style="padding:.85rem">
+        <p style="font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent,var(--red));margin-bottom:.2rem;font-family:var(--font-sub)">${p.category}</p>
+        <p style="font-family:var(--font-sub);font-weight:700;font-size:.95rem;margin-bottom:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</p>
+        <p style="font-family:var(--font-display);font-size:1.2rem;color:var(--accent,var(--red));letter-spacing:.04em;margin-bottom:.75rem">${formatPrice(p.price)}</p>
+        ${isPendingPayment?`
+          <div style="background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:3px;padding:.6rem .75rem;margin-bottom:.75rem;font-size:.72rem;color:var(--muted)">
+            Commission due : <strong style="color:var(--gold)">${formatPrice(p.commissionAmount)}</strong>
+            (${p.commissionRate}% de ${formatPrice(p.price)})
+          </div>
+          <button class="btn-red" style="width:100%;margin-bottom:.5rem;font-size:.68rem" onclick="openPayCommission('${p.id}')">
+            💳 Payer la commission et publier
+          </button>
+        `:''}
+        <div style="display:flex;gap:.5rem">
+          <a href="ajouter-article.html?edit=${p.id}" class="action-btn" style="flex:1;text-align:center">Modifier</a>
+          <button class="action-btn danger" onclick="openDelete(${p.id})">Supprimer</button>
+          ${!isPendingPayment&&!isSold?`<a href="../produit.html?id=${p.id}" target="_blank" class="action-btn" title="Voir l'annonce">👁</a>`:''}
+        </div>
+        <p style="font-size:.62rem;color:var(--muted);margin-top:.5rem;font-family:var(--font-sub)">${p.views||0} vue${p.views!==1?'s':''} · ${timeAgo(p.createdAt)}</p>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderOrders(){
+  const orders=DB.getOrdersBySeller(currentSeller.id);
+  const container=document.getElementById('ordersContainer');
+  if(!orders.length){
+    container.innerHTML='<div style="text-align:center;padding:3rem;color:var(--muted)"><p style="font-family:var(--font-display);font-size:1.3rem;letter-spacing:.05em">AUCUNE <span style="color:var(--accent,var(--red))">COMMANDE</span></p></div>';
+    return;
+  }
+  const statusLabels={pending:'En attente',confirmed:'Confirmée',shipped:'Expédiée',delivered:'Livrée',cancelled:'Annulée'};
+  const statusColors={pending:'badge-pending',confirmed:'badge-approved',shipped:'badge-approved',delivered:'badge-approved',cancelled:'badge-rejected'};
+  container.innerHTML=[...orders].reverse().map(o=>`
+    <div style="background:var(--black2);border:1px solid var(--border-n);border-radius:4px;margin-bottom:.85rem;overflow:hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.85rem 1.1rem;border-bottom:1px solid var(--border-n);flex-wrap:wrap;gap:.5rem">
+        <div>
+          <span style="font-family:var(--font-display);font-size:.95rem;color:var(--accent,var(--red));letter-spacing:.04em">${o.ref}</span>
+          <span style="font-size:.65rem;color:var(--muted);margin-left:.75rem;font-family:var(--font-sub)">${timeAgo(o.createdAt)}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.65rem">
+          <span class="badge ${statusColors[o.status]||'badge-pending'}">${statusLabels[o.status]||o.status}</span>
+          <select onchange="updateOrderStatus('${o.ref}',this.value)" style="background:var(--black3);border:1px solid var(--border-n);color:var(--white);padding:.3rem .6rem;font-size:.65rem;outline:none;border-radius:3px;font-family:var(--font-sub)">
+            <option value="pending" ${o.status==='pending'?'selected':''}>En attente</option>
+            <option value="confirmed" ${o.status==='confirmed'?'selected':''}>Confirmée</option>
+            <option value="shipped" ${o.status==='shipped'?'selected':''}>Expédiée</option>
+            <option value="delivered" ${o.status==='delivered'?'selected':''}>Livrée</option>
+            <option value="cancelled" ${o.status==='cancelled'?'selected':''}>Annulée</option>
+          </select>
+        </div>
+      </div>
+      <div style="padding:1rem 1.1rem;font-size:.82rem;display:grid;grid-template-columns:1fr 1fr;gap:.5rem .85rem">
+        <div><span style="font-size:.6rem;color:var(--accent,var(--red));text-transform:uppercase;letter-spacing:.15em;font-family:var(--font-sub);display:block;margin-bottom:.12rem">Acheteur</span>${o.firstName} ${o.lastName}</div>
+        <div><span style="font-size:.6rem;color:var(--accent,var(--red));text-transform:uppercase;letter-spacing:.15em;font-family:var(--font-sub);display:block;margin-bottom:.12rem">Téléphone</span><a href="tel:${o.phone}" style="color:var(--white)">${o.phone}</a></div>
+        <div><span style="font-size:.6rem;color:var(--accent,var(--red));text-transform:uppercase;letter-spacing:.15em;font-family:var(--font-sub);display:block;margin-bottom:.12rem">Livraison</span>${o.address}, ${o.city}</div>
+        <div><span style="font-size:.6rem;color:var(--accent,var(--red));text-transform:uppercase;letter-spacing:.15em;font-family:var(--font-sub);display:block;margin-bottom:.12rem">Paiement</span>${o.payment}</div>
+        <div style="grid-column:1/-1"><span style="font-size:.6rem;color:var(--accent,var(--red));text-transform:uppercase;letter-spacing:.15em;font-family:var(--font-sub);display:block;margin-bottom:.12rem">Article</span>${o.productName||'—'} — <strong style="color:var(--accent,var(--red))">${formatPrice(o.total)}</strong></div>
+        ${o.note?`<div style="grid-column:1/-1"><span style="font-size:.6rem;color:var(--accent,var(--red));text-transform:uppercase;letter-spacing:.15em;font-family:var(--font-sub);display:block;margin-bottom:.12rem">Note acheteur</span>${o.note}</div>`:''}
+        ${o.cancelReason?`<div style="grid-column:1/-1;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:4px;padding:.5rem .75rem"><span style="font-size:.6rem;color:#EF4444;text-transform:uppercase;letter-spacing:.15em;font-family:var(--font-sub);display:block;margin-bottom:.12rem">⚠️ Motif annulation</span><span style="font-size:.78rem;color:var(--text2)">${o.cancelReason}</span></div>`:''}
+      </div>
+      <div style="padding:.65rem 1.1rem;border-top:1px solid var(--border-n)">
+        <a href="https://wa.me/${o.phone?.replace(/\D/g,'')}?text=Bonjour%20${encodeURIComponent(o.firstName)}%2C%20votre%20commande%20${o.ref}%20est%20confirm%C3%A9e%20%F0%9F%8E%89" target="_blank" 
+          style="font-size:.68rem;color:#25D366;font-family:var(--font-sub);letter-spacing:.08em">
+          📲 Contacter l'acheteur sur WhatsApp
+        </a>
+      </div>
+    </div>`).join('');
+}
+
+function renderNotifications(){
+  const notifs=DB.getNotifications(currentSeller.id);
+  const container=document.getElementById('notifsContainer');
+  const unread=notifs.filter(n=>!n.read).length;
+  const badge=document.getElementById('unreadBadge');
+  if(unread>0){badge.style.cssText='display:inline-flex;align-items:center;justify-content:center;background:var(--red);color:#fff;border-radius:50%;width:16px;height:16px;font-size:.52rem;margin-left:.35rem';badge.textContent=unread;}
+  if(!notifs.length){container.innerHTML='<p style="color:var(--muted);text-align:center;padding:2rem;font-family:var(--font-sub)">AUCUNE NOTIFICATION</p>';return;}
+  container.innerHTML=[...notifs].reverse().map(n=>`
+    <div class="notif-item${n.read?'':' unread'}" onclick="markRead(${n.id},this)">
+      <p class="notif-msg">${n.msg}</p>
+      <p class="notif-time">${timeAgo(n.createdAt)}</p>
+    </div>`).join('');
+}
+
+function renderProfil(){
+  const s=currentSeller;
+  const verifStatus=s.verificationStatus||'none';
+  document.getElementById('profilContent').innerHTML=`
+    <div class="form-row"><div class="form-group"><label>Nom</label><input type="text" id="pName" class="form-input" value="${escHtml(s.name||'')}"></div><div class="form-group"><label>Téléphone</label><input type="tel" id="pPhone" class="form-input" value="${escHtml(s.phone||'')}"></div></div>
+    <div class="form-group"><label>WhatsApp (pour les commandes)</label><input type="tel" id="pWhatsapp" class="form-input" value="${escHtml(s.whatsapp||'')}"></div>
+    <div class="form-group"><label>Bio</label><textarea id="pBio" class="form-input" rows="3">${escHtml(s.bio||'')}</textarea></div>
+    <div class="form-group"><label>Numéro Wave</label><input type="tel" id="pWave" class="form-input" value="${escHtml(s.waveNumber||'')}"></div>
+    <div class="form-group"><label>Numéro Orange Money</label><input type="tel" id="pOrange" class="form-input" value="${escHtml(s.orangeNumber||'')}"></div>
+    <div class="form-group">
+      <label>Moyens de paiement acceptés</label>
+      <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:.35rem">
+        <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;cursor:pointer"><input type="checkbox" id="pPmWave" ${s.paymentMethods?.includes('wave')?'checked':''} style="accent-color:var(--accent)"> 🌊 Wave</label>
+        <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;cursor:pointer"><input type="checkbox" id="pPmOrange" ${s.paymentMethods?.includes('orange')?'checked':''} style="accent-color:var(--accent)"> 🟠 Orange Money</label>
+        <label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;cursor:pointer"><input type="checkbox" id="pPmLivraison" ${s.paymentMethods?.includes('livraison')?'checked':''} style="accent-color:var(--green)"> 🚚 Paiement à la livraison</label>
+      </div>
+    </div>
+    <p style="font-size:.72rem;color:var(--muted);margin-top:.5rem">Email : ${escHtml(s.email||'')} (non modifiable)</p>
+
+    <!-- ─── VÉRIFICATION IDENTITÉ ─── -->
+    <div style="margin-top:1.5rem;border-top:1px solid var(--border-n);padding-top:1.35rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:.5rem">
+        <p style="font-family:var(--font-sub);font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:600">🪪 VÉRIFICATION D'IDENTITÉ</p>
+        ${s.verified?'<span class="badge-verified badge-verified-lg">✓ Compte vérifié</span>':
+          verifStatus==='pending'?'<span style="font-size:.62rem;background:rgba(245,158,11,.12);color:var(--gold);border:1px solid rgba(245,158,11,.3);padding:.18rem .55rem;border-radius:4px;font-family:var(--font-sub)">⏳ En attente de validation</span>':
+          '<span style="font-size:.62rem;color:var(--muted)">Non vérifié</span>'}
+      </div>
+      ${(()=>{
+        if(s.verified) return '<p style="font-size:.75rem;color:var(--muted);line-height:1.6">Ton identité a été vérifiée. Le badge ✓ Vérifié est visible sur tous tes articles.</p>';
+        if(verifStatus==='pending') return '<div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.25);border-radius:6px;padding:.85rem;font-size:.78rem;color:#F59E0B;line-height:1.65">⏳ Documents en cours de vérification. Réponse sous 24h.</div>';
+        if(verifStatus==='rejected') return '<div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.25);border-radius:6px;padding:.85rem;margin-bottom:.85rem"><p style="font-size:.75rem;color:#EF4444;font-weight:600;margin-bottom:.25rem">❌ Demande refusée</p><p style="font-size:.75rem;color:var(--muted)">Motif : '+(s.verificationRejectReason||'Non précisé')+'</p><p style="font-size:.72rem;color:var(--muted);margin-top:.35rem">Tu peux soumettre à nouveau.</p></div>';
+        return '';
+      })()}
+      ${!s.verified&&verifStatus!=='pending'?`
+      <p style="font-size:.75rem;color:var(--muted);line-height:1.65;margin-bottom:.85rem">Obtiens le badge <strong style="color:var(--accent)">✓ Vérifié</strong> en uploadant ta CNI. Tes acheteurs auront plus confiance. Tes photos sont <strong style="color:var(--text2)">visibles uniquement par l'admin</strong>.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.85rem">
+        <div>
+          <label style="font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);font-family:var(--font-sub);display:block;margin-bottom:.35rem">📄 CNI Recto *</label>
+          <div id="cniRectoPreview" onclick="document.getElementById('cniRectoInput').click()" style="height:100px;background:var(--surface);border:2px dashed var(--border2);border-radius:var(--r);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;transition:border-color .2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)'">
+            <span style="font-size:.72rem;color:var(--muted)">📷 Cliquer pour uploader</span>
+          </div>
+          <input type="file" id="cniRectoInput" accept="image/*,.heic,.heif" style="display:none" onchange="previewCNI('recto',this)">
+        </div>
+        <div>
+          <label style="font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);font-family:var(--font-sub);display:block;margin-bottom:.35rem">📄 CNI Verso *</label>
+          <div id="cniVersoPreview" onclick="document.getElementById('cniVersoInput').click()" style="height:100px;background:var(--surface);border:2px dashed var(--border2);border-radius:var(--r);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;transition:border-color .2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)'">
+            <span style="font-size:.72rem;color:var(--muted)">📷 Cliquer pour uploader</span>
+          </div>
+          <input type="file" id="cniVersoInput" accept="image/*,.heic,.heif" style="display:none" onchange="previewCNI('verso',this)">
+        </div>
+      </div>
+      <button onclick="submitVerificationRequest()" class="btn-red" style="width:100%;font-size:.7rem">🪪 Envoyer ma demande de vérification →</button>
+      `:''}
+    </div>`;
+}
+
+function saveProfile(){
+  const pm=[];
+  if(document.getElementById('pPmWave')?.checked)pm.push('wave');
+  if(document.getElementById('pPmOrange')?.checked)pm.push('orange');
+  if(document.getElementById('pPmLivraison')?.checked)pm.push('livraison');
+  const updated=DB.updateUser(currentSeller.id,{
+    name:document.getElementById('pName').value.trim(),
+    phone:document.getElementById('pPhone').value.trim(),
+    whatsapp:document.getElementById('pWhatsapp').value.trim(),
+    bio:document.getElementById('pBio').value.trim(),
+    waveNumber:document.getElementById('pWave').value.trim(),
+    orangeNumber:document.getElementById('pOrange').value.trim(),
+    paymentMethods:pm.length?pm:['wave']
+  });
+  if(updated){currentSeller=updated;showToast('Profil mis à jour ✓','success');}
+}
+
+function openPayCommission(productId){
+  const p=DB.getProduct(productId);if(!p)return;
+  const seller=currentSeller;
+  document.getElementById('commModalBody').innerHTML=`
+    <p style="color:var(--muted);font-size:.85rem;line-height:1.75;margin-bottom:1.35rem">
+      Pour publier <strong style="color:var(--white)">"${p.name}"</strong>, paie la commission Vendora-sn :
+    </p>
+    <div style="background:var(--black3);border:1px solid var(--border-n);padding:1rem;border-radius:4px;margin-bottom:1.35rem;text-align:center">
+      <p style="font-size:.62rem;color:var(--accent,var(--red));letter-spacing:.2em;text-transform:uppercase;font-family:var(--font-sub);margin-bottom:.35rem">Commission (${p.commissionRate}% de ${formatPrice(p.price)})</p>
+      <p style="font-family:var(--font-display);font-size:2.2rem;color:var(--white);letter-spacing:.04em">${formatPrice(p.commissionAmount)}</p>
+    </div>
+    <p style="font-size:.72rem;color:var(--muted);margin-bottom:1rem">Paie via Wave ou Orange Money au numéro Vendora-sn, puis confirme ci-dessous.</p>
+    ${seller.paymentMethods?.includes('wave')||true?`<a href="${CONFIG.WAVE_URL}" target="_blank" class="wave-btn" style="display:block;margin-bottom:.65rem">🌊 Payer ${formatPrice(p.commissionAmount)} via Wave</a>`:''}
+    <div style="background:rgba(255,102,0,.1);border:1px solid rgba(255,102,0,.25);border-radius:4px;padding:.85rem;margin-bottom:1.25rem;font-size:.78rem;color:var(--muted)">
+      <strong style="color:#FF6600;display:block;margin-bottom:.2rem">🟠 Orange Money</strong>
+      Envoie ${formatPrice(p.commissionAmount)} au <strong style="color:var(--white)">${CONFIG.OM_NUMBER}</strong>
+    </div>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent,var(--red));display:block;margin-bottom:.45rem;font-family:var(--fs)">Code de transaction *</label>
+      <input type="text" id="commTxCode_${productId}" class="form-input" placeholder="ex: TXN123456 — Code reçu par SMS après paiement">
+      <p style="font-size:.68rem;color:var(--text3);margin-top:.35rem">Paie la commission via Wave ou OM, puis entre le code de transaction ici. L'admin Vendora-sn vérifiera et publiera l'article.</p>
+    </div>
+    <button class="btn-green" style="width:100%;margin-bottom:.5rem;font-size:.75rem;letter-spacing:.15em" onclick="submitCommissionCode('${productId}')">
+      ✓ Soumettre le code — En attente de validation admin
+    </button>`;
+  document.getElementById('commModal').classList.add('open');
+}
+
+function submitCommissionCode(productId){
+  const code=document.getElementById('commTxCode_'+productId)?.value?.trim();
+  if(!code){showToast('Entre le code de transaction','error');return;}
+  DB.updateProduct(productId,{transactionCode:code,status:'pending_payment'});
+  DB.addNotification('admin',
+    'Paiement commission soumis par '+currentSeller.name+' pour "'+DB.getProduct(productId)?.name+'" — Code: '+code,
+    'payment'
+  );
+  document.getElementById('commModal').classList.remove('open');
+  showToast("Code envoyé ! L'admin va vérifier et publier votre article.",'success');
+  renderAll();
+}
+function confirmCommissionPaid(productId){
+  DB.updateProduct(productId,{status:'approved',commissionPaid:true});
+  document.getElementById('commModal').classList.remove('open');
+  showToast('Article publié ! Il est maintenant visible par tous. ✓','success');
+  renderAll();
+}
+
+function updateOrderStatus(ref, status){
+  if(status === 'cancelled'){
+    // Open cancellation modal
+    document.getElementById('cancelOrderRef').value = ref;
+    document.querySelectorAll('input[name="cancelReason"]').forEach(r=>r.checked=false);
+    document.getElementById('cancelDetail').value = '';
+    document.getElementById('cancelModal').classList.add('open');
+    // Reset select visually
+    setTimeout(()=>renderOrders(), 50);
+    return;
+  }
+  DB.updateOrder(ref, {status});
+  if(status === 'delivered'){
+    const order = DB.getOrders().find(o=>o.ref===ref);
+    if(order?.productId) DB.updateProduct(order.productId, {status:'sold'});
+  }
+  showToast('Statut mis à jour ✓', 'success');
+  renderOrders();
+  renderStats();
+}
+
+function confirmCancel(){
+  const ref = document.getElementById('cancelOrderRef').value;
+  const reason = document.querySelector('input[name="cancelReason"]:checked')?.value;
+  const detail = document.getElementById('cancelDetail').value.trim();
+  if(!reason){showToast('Choisissez un motif d\'annulation','error');return;}
+  const fullReason = detail ? reason + ' — ' + detail : reason;
+
+  const order = DB.getOrders().find(o=>o.ref===ref);
+  DB.updateOrder(ref, {status:'cancelled', cancelReason:fullReason, cancelledAt:new Date().toISOString()});
+
+  // Republish article automatically
+  if(order?.productId){
+    const product = DB.getProduct(order.productId);
+    if(product && (product.status==='sold'||product.status==='approved')){
+      DB.updateProduct(order.productId, {status:'approved'});
+    }
+  }
+
+  // Count seller cancellations — auto-suspend after 3 non-buyer-initiated
+  const sellerOrders = DB.getOrdersBySeller(currentSeller.id);
+  const badCancels = sellerOrders.filter(o=>
+    o.status==='cancelled' &&
+    o.cancelReason &&
+    !o.cancelReason.includes("Acheteur a demandé")
+  ).length;
+  if(badCancels >= 2){
+    DB.updateUser(currentSeller.id, {cancelWarning:true});
+    DB.addNotification('admin',
+      `⚠️ ALERTE — ${currentSeller.name} a ${badCancels+1} annulations vendeur. Vérification recommandée.`,
+      'alert'
+    );
+  }
+
+  // Notify admin
+  DB.addNotification('admin',
+    `Commande ${ref} annulée par ${currentSeller.name} — Motif : ${fullReason}`,
+    'cancel'
+  );
+
+  document.getElementById('cancelModal').classList.remove('open');
+  showToast('Commande annulée. L\'article a été remis en vente. ✓', 'success');
+  renderOrders();
+  renderStats();
+}
+
+function openDelete(id){document.getElementById('deleteId').value=id;document.getElementById('deleteModal').classList.add('open');}
+function confirmDelete(){DB.deleteProduct(document.getElementById('deleteId').value);document.getElementById('deleteModal').classList.remove('open');renderAll();showToast('Article supprimé.','success');}
+
+function markRead(id,el){DB.markNotifRead(id);el.classList.remove('unread');renderNotifications();}
+
+function showTab(tab){
+  document.querySelectorAll('.sdash-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.sdash-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+}
+
+// ── BOOST ──
+let selectedBoostPlan = null;
+
+function initBoostTab(){
+  const sel = document.getElementById('boostProductSel');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">-- Sélectionne un article --</option>';
+  DB.getProductsBySeller(currentSeller.id)
+    .filter(p=>p.status==='approved')
+    .forEach(p=>{
+      const boost = CONFIG.isBoostActive(p);
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name + (boost ? ' (Boost actif — '+CONFIG.getBoostDaysLeft(p)+' jours restants)' : '');
+      sel.appendChild(opt);
+    });
+}
+
+function renderBoostPlans(){
+  const productId = document.getElementById('boostProductSel').value;
+  const grid = document.getElementById('boostPlanGrid');
+  const section = document.getElementById('boostPlans');
+  const paySection = document.getElementById('boostPaySection');
+  selectedBoostPlan = null;
+  if(!productId){ section.style.display='none'; return; }
+  section.style.display='block';
+  paySection.style.display='none';
+  grid.innerHTML = CONFIG.BOOST_PLANS.map(plan=>`
+    <div class="boost-card" onclick="selectBoostPlan('${plan.id}',this)">
+      <span class="boost-price">${formatPrice(plan.price)}</span>
+      <span class="boost-label">${plan.label}</span>
+      <p style="font-size:.7rem;color:var(--accent,var(--red));margin-top:.5rem;font-family:var(--fs)">${plan.badge}</p>
+    </div>`).join('');
+}
+
+function selectBoostPlan(planId, el){
+  selectedBoostPlan = CONFIG.BOOST_PLANS.find(p=>p.id===planId);
+  document.querySelectorAll('.boost-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  const paySection = document.getElementById('boostPaySection');
+  paySection.style.display = 'block';
+  document.getElementById('boostAmountDisplay').textContent = formatPrice(selectedBoostPlan.price);
+  const waveBtn = document.getElementById('boostWaveBtn');
+  if(waveBtn) waveBtn.href = CONFIG.WAVE_URL;
+}
+
+function submitBoost(){
+  if(!selectedBoostPlan){ showToast('Choisis un plan de boost','error'); return; }
+  const productId = document.getElementById('boostProductSel').value;
+  const txCode = document.getElementById('boostTxCode').value.trim();
+  if(!txCode){ showToast('Entre le code de transaction','error'); return; }
+  // Save boost request - pending admin validation
+  DB.updateProduct(productId, {
+    boostPlan: selectedBoostPlan.id,
+    boostTransactionCode: txCode,
+    boostPaid: false, // admin must confirm
+    boostPendingValidation: true,
+  });
+  // Notify admin via notification
+  DB.addNotification('admin',
+    `Demande de boost de ${currentSeller.name} pour "${DB.getProduct(productId)?.name}" — Plan: ${selectedBoostPlan.label} — Code TX: ${txCode}`,
+    'boost'
+  );
+  showToast("Demande envoyée ! L'admin vérifiera le paiement et activera le boost.", 'success');
+  document.getElementById('boostProductSel').value='';
+  document.getElementById('boostPlans').style.display='none';
+  document.getElementById('boostTxCode').value='';
+}
+
+// ── CNI VERIFICATION ──
+let cniPhotos={recto:null,verso:null};
+
+async function previewCNI(side,input){
+  const file=input.files[0];if(!file)return;
+  if(file.size>5*1024*1024){showToast('Image trop lourde (max 5Mo)','error');return;}
+  showToast('Envoi en cours...','info');
+  try{
+    const url=await uploadToCloudinary(file);
+    cniPhotos[side]=url;
+    const preview=document.getElementById('cni'+side.charAt(0).toUpperCase()+side.slice(1)+'Preview');
+    if(preview) preview.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover">`;
+    showToast(`CNI ${side} uploadée ✓`,'success');
+  }catch(err){
+    showToast('Erreur upload: '+err.message,'error');
+  }
+}
+
+function submitVerificationRequest(){
+  if(!cniPhotos.recto||!cniPhotos.verso){
+    showToast('Uploade les deux faces de ta CNI (recto et verso)','error');
+    return;
+  }
+  DB.updateUser(currentSeller.id,{
+    verificationStatus:'pending',
+    cniRecto:cniPhotos.recto,
+    cniVerso:cniPhotos.verso,
+    cniSubmittedAt:new Date().toISOString()
+  });
+  currentSeller.verificationStatus='pending';
+  DB.addNotification('admin',
+    `🪪 DEMANDE VÉRIFICATION — ${currentSeller.name} (${currentSeller.email}) a soumis sa CNI. ID: ${currentSeller.id}`,
+    'verification'
+  );
+  cniPhotos={recto:null,verso:null};
+  showToast("Demande envoyée ! L'admin vérifiera sous 24h. ✓",'success');
+  renderProfil();
+}
+
+function viewCapture(ref){
+  const capture=localStorage.getItem('capture_'+ref);
+  if(!capture){showToast('Aucune capture disponible','error');return;}
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;cursor:zoom-out';
+  wrap.innerHTML=`<div style="max-width:480px;width:100%;background:var(--surface);border-radius:12px;padding:1.25rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+      <p style="font-family:var(--font-sub);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--green)">✓ PREUVE DE PAIEMENT — ${ref}</p>
+      <button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:none;color:var(--text3);font-size:1.2rem;cursor:pointer">✕</button>
+    </div>
+    <img src="${capture}" style="width:100%;border-radius:8px;border:1px solid var(--border)">
+    <p style="font-size:.68rem;color:var(--muted);margin-top:.65rem;text-align:center">Cette capture est la preuve de paiement de l'acheteur. Garde-la en cas de litige.</p>
+  </div>`;
+  wrap.addEventListener('click',e=>{if(e.target===wrap)wrap.remove();});
+  document.body.appendChild(wrap);
+}
+
+// init boost tab on render
+document.addEventListener("click", e=>{ if(e.target.classList.contains("sdash-tab")&&e.target.textContent.includes("Boost")) { setTimeout(initBoostTab,50); } });
+</script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vendeurs — Admin Vendora-sn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script>(function(){var t=localStorage.getItem("dfm_theme")||"dark";document.documentElement.setAttribute("data-theme",t);})();</script>
+<link rel="stylesheet" href="../assets/style.css?v=18">
+</head>
+<body>
+<div class="admin-layout">
+  <div id="admin-sidebar-placeholder"></div>
+  <main class="admin-main">
+    <div class="admin-header"><h1>VENDEURS</h1></div>
+    <div class="search-bar"><input type="text" class="search-input" id="searchInput" placeholder="Nom, email..." oninput="filter()"><select class="status-select" id="statusFilter" onchange="filter()"><option value="">Tous</option><option value="active">Actifs</option><option value="suspended">Suspendus</option></select></div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Vendeur</th><th>Contact</th><th>WhatsApp</th><th>Paiement</th><th>Articles</th><th>Ventes</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+<div id="toast-container"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/db.js?v=18"></script><script src="../assets/auth.js?v=18"></script><script src="../assets/config.js?v=18"></script><script src="../assets/ui.js?v=18"></script><script src="admin-ui.js?v=18"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{if(!Auth.requireAdmin())return;loadAdminSidebar('vendeurs');filter();});
+function filter(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const s=document.getElementById('statusFilter').value;
+  let sellers=DB.getSellers();
+  if(q)sellers=sellers.filter(x=>x.name.toLowerCase().includes(q)||x.email.toLowerCase().includes(q));
+  if(s)sellers=sellers.filter(x=>x.status===s);
+  const tbody=document.getElementById('tbody');
+  if(!sellers.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:3rem">Aucun vendeur</td></tr>';return;}
+  tbody.innerHTML=sellers.map(s=>{
+    const articles=DB.getProductsBySeller(s.id);
+    const onlineCount=articles.filter(p=>p.status==='approved').length;
+    const soldCount=articles.filter(p=>p.status==='sold').length;
+    const cancelCount=DB.getOrders().filter(o=>o.sellerId===s.id&&o.status==='cancelled').length;
+    const pays=s.paymentMethods||[];
+    return`<tr>
+      <td><p style="font-family:var(--font-sub);font-weight:700">${s.name}${s.cancelWarning?'<span style="display:inline-flex;align-items:center;background:rgba(239,68,68,.15);color:#EF4444;border:1px solid rgba(239,68,68,.3);font-size:.48rem;letter-spacing:.1em;padding:.08rem .3rem;border-radius:3px;margin-left:.4rem;font-family:var(--font-sub)">⚠️ ANNULATIONS</span>':''}${s.verified?'<span style="display:inline-flex;align-items:center;background:rgba(37,99,235,.15);color:#3B82F6;border:1px solid rgba(37,99,235,.3);font-size:.48rem;letter-spacing:.1em;padding:.08rem .3rem;border-radius:3px;margin-left:.4rem;font-family:var(--font-sub)">✓ VÉRIFIÉ</span>':''}</p><p style="font-size:.65rem;color:var(--muted)">${s.email}</p><p style="font-size:.65rem;color:var(--muted)">${s.bio?s.bio.slice(0,40)+'…':''}</p></td>
+      <td style="font-size:.78rem">${s.phone||'—'}</td>
+      <td style="font-size:.78rem"><a href="https://wa.me/${(s.whatsapp||'').replace(/\D/g,'')}" target="_blank" style="color:#25D366">${s.whatsapp||s.phone||'—'}</a></td>
+      <td style="font-size:.75rem">${pays.includes('wave')?'🌊 Wave<br>':''}${pays.includes('orange')?'🟠 OM':''}</td>
+      <td style="font-size:.8rem">${onlineCount} en ligne</td>
+      <td style="font-size:.8rem;color:var(--green2)">${soldCount} vendus</td>
+      <td style="font-size:.8rem;color:${cancelCount>3?'#EF4444':'var(--muted)'}">${cancelCount} annulation${cancelCount>1?'s':''}</td>
+      <td><span class="badge ${s.status==='active'?'badge-active':'badge-suspended'}">${s.status==='active'?'Actif':'Suspendu'}</span></td>
+      <td style="white-space:nowrap">
+        ${s.status==='active'?`<button class="action-btn danger" onclick="toggleStatus('${s.id}','suspended')">Suspendre</button>`:`<button class="action-btn approve" onclick="toggleStatus('${s.id}','active')">Réactiver</button>`}
+        ${s.verificationStatus==='pending'?`<button class="action-btn approve" onclick="viewCNI('${s.id}')" title="Voir la CNI soumise">🪪 Voir CNI</button>`:''}
+        <button class="action-btn ${''}" style="${s.verified?'border-color:rgba(37,99,235,.5);color:#3B82F6':'border-color:var(--border2);color:var(--muted)'}" onclick="toggleVerified('${s.id}',${!s.verified})" title="${s.verified?'Retirer la vérification':'Marquer comme vérifié'}">
+          ${s.verified?'✓ Vérifié':'Vérifier'}
+        </button>
+      </td>
+    </tr>`;}).join('');
+}
+function toggleStatus(id,status){DB.updateUser(id,{status});showToast('Statut mis à jour','success');filter();}
+function toggleVerified(id,v){
+  DB.updateUser(id,{verified:v,verificationStatus:v?'approved':'none'});
+  showToast(v?'Vendeur vérifié ✓':'Vérification retirée','success');
+  filter();
+}
+function rejectVerification(id){
+  const reason=prompt('Motif du refus (sera envoyé au vendeur) :');
+  if(!reason||reason.trim().length<5){showToast('Entrez un motif','error');return;}
+  DB.updateUser(id,{verificationStatus:'rejected',verificationRejectReason:reason.trim()});
+  DB.addNotification(id,'❌ Demande de vérification refusée — Motif : '+reason.trim(),'verification');
+  showToast('Refus envoyé au vendeur','success');
+  filter();
+}
+function viewCNI(sellerId){
+  const seller=DB.getUser(sellerId);
+  if(!seller||!seller.cniRecto||!seller.cniVerso){
+    showToast('Aucune CNI trouvée pour ce vendeur','error');
+    return;
+  }
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem';
+  wrap.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;max-width:600px;width:100%;padding:1.5rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <div>
+        <p style="font-family:var(--font-sub);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent)">CNI — ${seller.name}</p>
+        <p style="font-size:.68rem;color:var(--muted)">Soumis le ${seller.cniSubmittedAt?new Date(seller.cniSubmittedAt).toLocaleString('fr-FR'):'—'}</p>
+      </div>
+      <button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:none;color:var(--text3);font-size:1.2rem;cursor:pointer">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem">
+      <div><p style="font-size:.65rem;color:var(--muted);margin-bottom:.35rem;font-family:var(--font-sub);letter-spacing:.1em">RECTO</p><img src="${seller.cniRecto}" style="width:100%;border-radius:6px;border:1px solid var(--border)" onerror="this.src='';this.alt='Image non disponible'"></div>
+      <div><p style="font-size:.65rem;color:var(--muted);margin-bottom:.35rem;font-family:var(--font-sub);letter-spacing:.1em">VERSO</p><img src="${seller.cniVerso}" style="width:100%;border-radius:6px;border:1px solid var(--border)" onerror="this.src='';this.alt='Image non disponible'"></div>
+    </div>
+    <div style="display:flex;gap:.65rem">
+      <button onclick="toggleVerified('${sellerId}',true);this.closest('div[style*=fixed]').remove()" style="flex:1;background:var(--green);color:#fff;border:none;padding:.82rem;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;font-family:var(--font-sub);border-radius:var(--r);cursor:pointer">✓ Valider — Marquer Vérifié</button>
+      <button onclick="rejectVerification('${sellerId}');this.closest('div[style*=fixed]').remove()" style="flex:1;background:#EF4444;color:#fff;border:none;padding:.82rem;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;font-family:var(--font-sub);border-radius:var(--r);cursor:pointer">✕ Refuser</button>
+    </div>
+  </div>`;
+  wrap.addEventListener('click',e=>{if(e.target===wrap)wrap.remove();});
+  document.body.appendChild(wrap);
+}
+</script>
+</body>
+</html>

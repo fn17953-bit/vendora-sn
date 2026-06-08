@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Article — Vendora-sn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script>(function(){var t=localStorage.getItem("dfm_theme")||"dark";document.documentElement.setAttribute("data-theme",t);})();</script>
+<link rel="stylesheet" href="assets/style.css?v=18">
+</head>
+<body>
+<div id="nav-placeholder"></div>
+<div class="page-wrap">
+  <div class="section" style="padding-top:calc(var(--nav-h) + 2rem)">
+    <div id="productContent"></div>
+    <!-- REVIEWS SECTION -->
+    <div id="reviewsSection" style="border-top:1px solid var(--border-n);padding-top:2.5rem;margin-top:2.5rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+        <h2 class="section-title" style="margin-bottom:0">Avis <span style="color:var(--accent,var(--red))">acheteurs</span></h2>
+        <button class="btn-outline" style="font-size:.65rem" onclick="toggleReviewForm()">✍️ Laisser un avis</button>
+      </div>
+      <!-- Review form -->
+      <div id="reviewForm" style="display:none;background:var(--surface2);border:1px solid var(--border-n);border-radius:var(--r2);padding:1.5rem;margin-bottom:1.5rem">
+        <p style="font-family:var(--font-sub);font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent,var(--red));margin-bottom:1rem">Votre avis</p>
+        <div style="display:flex;gap:.35rem;margin-bottom:1rem" id="starPicker">
+          <button class="star-btn" data-star="1" onclick="pickStar(1)">★</button>
+          <button class="star-btn" data-star="2" onclick="pickStar(2)">★</button>
+          <button class="star-btn" data-star="3" onclick="pickStar(3)">★</button>
+          <button class="star-btn" data-star="4" onclick="pickStar(4)">★</button>
+          <button class="star-btn" data-star="5" onclick="pickStar(5)">★</button>
+        </div>
+        <input type="text" id="reviewName" class="form-input" placeholder="Votre prénom *" style="margin-bottom:.65rem">
+        <textarea id="reviewText" class="form-input" rows="3" placeholder="Décrivez votre expérience d'achat..." style="margin-bottom:.85rem;resize:vertical"></textarea>
+        <button class="btn-red" style="font-size:.7rem" onclick="submitReview()">Publier l'avis →</button>
+      </div>
+      <!-- Reviews list -->
+      <div id="reviewsList"></div>
+    </div>
+    <div id="relatedSection" style="display:none;border-top:1px solid var(--border-n);padding-top:3rem;margin-top:3rem">
+      <h2 class="section-title" style="margin-bottom:2rem">Articles <span style="color:var(--accent,var(--red))">similaires</span></h2>
+      <div class="products-grid" id="relatedGrid"></div>
+    </div>
+    <div class="seller-more-section" id="sellerMoreSection" style="display:none">
+      <span class="eyebrow">Ce vendeur</span>
+      <h2 class="section-title" style="margin-bottom:2rem">Autres articles <span>du vendeur</span></h2>
+      <div class="products-grid" id="sellerMoreGrid"></div>
+    </div>
+    <div class="recently-viewed-section" id="rvSection">
+      <span class="eyebrow">Historique</span>
+      <h2 class="section-title" style="margin-bottom:1.5rem">Récemment <span>consultés</span></h2>
+      <div class="rv-scroll" id="rvGrid"></div>
+    </div>
+  </div>
+</div>
+<div id="footer-placeholder"></div>
+<div id="cart-placeholder"></div>
+<div id="toast-container"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="assets/db.js?v=18"></script><script src="assets/auth.js?v=18"></script><script src="assets/config.js?v=18"></script><script src="assets/animations.js?v=18"></script><script src="assets/ui.js?v=18"></script>
+<script>
+let currentProduct=null;
+document.addEventListener('DOMContentLoaded',()=>{
+  loadNav();loadFooter();loadCart();loadBackBtn();
+  loadBottomNav();loadThemeFab();
+  const id=new URLSearchParams(window.location.search).get('id');
+  currentProduct=DB.getProduct(id);
+  if(!currentProduct||currentProduct.status!=='approved'){
+    document.getElementById('productContent').innerHTML='<div class="empty-state"><p>ARTICLE <span>INTROUVABLE</span></p><a href="boutique.html" class="btn-outline">Retour</a></div>';
+    return;
+  }
+  DB.incrementViews(currentProduct.id);
+  rvAdd(currentProduct.id);
+  renderProduct();renderRelated();renderReviews();renderSellerMore();
+  document.title=currentProduct.name+' — Vendora-sn';
+  initFloatingOrderBtn('commande.html?id='+currentProduct.id);
+});
+function renderProduct(){
+  const p=currentProduct;
+  const seller=DB.getUser(p.sellerId)||{name:'Vendeur',phone:'',totalSales:0};
+  const initials=seller.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  const photos=p.photos||[];
+  const thumbs=photos.map((ph,i)=>`<img src="${ph.url}" alt="${ph.label||''}" class="gallery-thumb${i===0?' active':''}" onclick="switchImg(this,'${ph.url.replace(/'/g,"\\'")}');" loading="lazy">`).join('');
+  const sellerProducts=DB.getProductsBySeller(p.sellerId).filter(x=>x.status==='approved'&&x.id!==p.id).length;
+  document.getElementById('productContent').innerHTML=`
+    <div class="breadcrumb"><a href="index.html">Accueil</a> › <a href="boutique.html">Explorer</a> › <a href="boutique.html?cat=${encodeURIComponent(p.category)}">${p.category}</a> › ${p.name}</div>
+    <div class="product-layout">
+      <div class="product-visual">
+        <div class="product-main-img" id="mainImgBox">
+          ${photos[0]?`<img id="mainImg" src="${photos[0].url}" alt="${p.name}" style="transition:opacity .25s">`:`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:5rem;opacity:.1">📦</div>`}
+          ${p.condition?`<span class="prod-condition ${conditionClass(p.condition)}" style="position:absolute;top:.75rem;left:.75rem;z-index:2">${p.condition}</span>`:''}
+        </div>
+        ${thumbs?`<div class="product-thumbs">${thumbs}</div>`:''}
+        <div style="margin-top:1rem;background:var(--black2);border:1px solid var(--border-n);padding:.85rem;border-radius:4px;font-size:.72rem;color:var(--muted)">
+          👁 ${p.views||0} vue${p.views!==1?'s':''} · Publié ${timeAgo(p.createdAt)}
+        </div>
+      </div>
+      <div class="product-info">
+        <p style="font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent,var(--red));margin-bottom:.3rem;font-family:var(--font-sub)">${p.category}${p.subcategory?' · '+p.subcategory:''}</p>
+        <h1 style="font-family:var(--font-sub);font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;line-height:1.1;margin-bottom:.65rem;letter-spacing:.02em">${p.name}</h1>
+        <p class="product-price-big">${formatPrice(p.price)}</p>
+        <div class="product-details-grid" style="margin-bottom:1.5rem">
+          ${p.condition?`<div class="detail-item"><span>État</span><span>${p.condition}</span></div>`:''}
+          ${p.brand?`<div class="detail-item"><span>Marque</span><span>${p.brand}</span></div>`:''}
+          ${p.size?`<div class="detail-item"><span>Taille</span><span>${p.size}</span></div>`:''}
+          <div class="detail-item"><span>Catégorie</span><span>${p.category}</span></div>
+        </div>
+        <p class="product-desc">${p.description||''}</p>
+        <!-- Seller info -->
+        <div class="seller-info-box">
+          <div class="sib-avatar">${initials}</div>
+          <div style="flex:1">
+            <p class="sib-name">${seller.name}${seller.verified?'<span class="badge-verified badge-verified-lg" title="Vendeur vérifié">✓ Vérifié</span>':''}</p>
+            <p class="sib-stats">${sellerProducts} article${sellerProducts!==1?'s':''} · ${seller.totalSales||0} vente${seller.totalSales!==1?'s':''}</p>
+            ${(()=>{
+              const reviews=DB.getReviewsBySeller(seller.id);
+              const liveRating=reviews.length>0?Math.round(reviews.reduce((s,r)=>s+r.rating,0)/reviews.length*10)/10:seller.rating;
+              return liveRating>0
+                ?`<div class="seller-rating" style="margin-top:.35rem;font-size:.8rem;display:flex;align-items:center;gap:.35rem">
+                  <span style="color:var(--gold);font-size:.95rem">${'★'.repeat(Math.round(liveRating))}${'☆'.repeat(5-Math.round(liveRating))}</span>
+                  <span style="font-size:.75rem;font-weight:600;color:var(--gold)">${liveRating}</span>
+                  <span style="font-size:.65rem;color:var(--muted)">(${reviews.length} avis)</span>
+                </div>`
+                :`<div style="font-size:.68rem;color:var(--muted);margin-top:.2rem">Pas encore d'avis</div>`;
+            })()}
+          </div>
+        </div>
+        <!-- Actions -->
+        <div style="display:flex;flex-direction:column;gap:.65rem;margin-bottom:1.35rem">
+          <button class="btn-red" style="padding:1rem;font-size:.75rem" onclick="addProdToCart()">Ajouter au panier</button>
+          <a href="https://wa.me/${(seller.whatsapp||seller.phone||'').replace(/\D/g,'')}?text=Bonjour%20${encodeURIComponent(seller.name)},%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20votre%20article%20%22${encodeURIComponent(p.name)}%22%20%C3%A0%20${encodeURIComponent(formatPrice(p.price))}." 
+            target="_blank" class="btn-ghost" style="text-align:center;padding:1rem;font-size:.75rem">
+            📲 Contacter le vendeur sur WhatsApp
+          </a>
+          <div style="display:flex;gap:.5rem">
+            <button class="btn-share" onclick="shareProduct()" title="Partager cet article">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Partager
+            </button>
+            <button class="btn-share btn-share-wa" onclick="shareProductWA()" title="Partager sur WhatsApp">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.334.101 11.893c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652c1.746.943 3.71 1.444 5.71 1.447h.006c6.585 0 11.946-5.336 11.949-11.896 0-3.176-1.24-6.165-3.48-8.45z"/></svg>
+              WhatsApp
+            </button>
+          </div>
+        </div>
+        <div style="background:var(--black2);border:1px solid var(--border-n);padding:.85rem;font-size:.72rem;color:var(--muted);line-height:1.65;border-radius:4px">
+          <strong style="color:var(--accent,var(--red));display:block;margin-bottom:.5rem;font-family:var(--font-sub);letter-spacing:.08em">✓ MOYENS DE PAIEMENT ACCEPTÉS</strong>
+          <div style="display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:.6rem">
+            ${(seller.paymentMethods||['wave']).includes('wave')?`<span style="display:inline-flex;align-items:center;gap:.28rem;background:rgba(26,114,232,.12);border:1px solid rgba(26,114,232,.3);color:#4A9EFF;padding:.22rem .6rem;border-radius:4px;font-size:.65rem;font-family:var(--font-sub);letter-spacing:.06em">🌊 Wave</span>`:''}
+            ${(seller.paymentMethods||[]).includes('orange')?`<span style="display:inline-flex;align-items:center;gap:.28rem;background:rgba(255,102,0,.1);border:1px solid rgba(255,102,0,.3);color:#FF8C42;padding:.22rem .6rem;border-radius:4px;font-size:.65rem;font-family:var(--font-sub);letter-spacing:.06em">🟠 Orange Money</span>`:''}
+            ${(seller.paymentMethods||[]).includes('livraison')?`<span style="display:inline-flex;align-items:center;gap:.28rem;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:var(--green);padding:.22rem .6rem;border-radius:4px;font-size:.65rem;font-family:var(--font-sub);letter-spacing:.06em">🚚 Paiement à la livraison</span>`:''}
+          </div>
+          Paiement direct au vendeur. Vendora-sn garantit la visibilité de l'annonce.
+        </div>
+        <!-- Security banner -->
+        <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:var(--r);padding:.85rem 1rem;margin-top:.75rem">
+          <p style="font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--green);font-family:var(--font-sub);font-weight:600;margin-bottom:.45rem">🛡️ CONSEILS SÉCURITÉ</p>
+          <ul style="font-size:.72rem;color:var(--muted);line-height:1.8;padding-left:1rem">
+            <li>Privilégie le <strong style="color:var(--text2)">paiement à la livraison</strong> si disponible</li>
+            <li>Ne transfère pas d'argent avant de voir l'article</li>
+            <li>Contacte le vendeur sur WhatsApp avant de commander</li>
+            <li>Vérifie les avis d'autres acheteurs ci-dessous</li>
+          </ul>
+        </div>
+        <!-- Report button -->
+        <button onclick="openReportModal()" style="width:100%;margin-top:.65rem;background:transparent;border:1px solid rgba(239,68,68,.3);color:rgba(239,68,68,.7);padding:.5rem;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;font-family:var(--font-sub);border-radius:var(--r);cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='#EF4444';this.style.color='#EF4444'" onmouseout="this.style.borderColor='rgba(239,68,68,.3)';this.style.color='rgba(239,68,68,.7)'">
+          🚩 Signaler cette annonce
+        </button>
+        <!-- Buyer protection -->
+        <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:var(--r);padding:.85rem 1rem;margin-top:.65rem">
+          <p style="font-family:var(--font-sub);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:.5rem">🛡️ Protection acheteur Vendora-sn</p>
+          <ul style="font-size:.72rem;color:var(--text3);line-height:1.9;list-style:none;padding:0">
+            <li>✓ Vendeur vérifié par l'admin avant publication</li>
+            <li>✓ Signaler ce vendeur si problème — enquête sous 24h</li>
+            <li>✓ Privilégiez le paiement à la livraison pour les inconnus</li>
+            <li>✓ Toute annulation suspecte est signalée à notre équipe</li>
+          </ul>
+          <button onclick="reportSeller('${p.sellerId}','${escHtml(seller.name)}')" style="margin-top:.5rem;background:none;border:1px solid rgba(239,68,68,.3);color:#EF4444;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;padding:.3rem .7rem;border-radius:var(--r);cursor:pointer;font-family:var(--font-sub)">⚑ Signaler ce vendeur</button>
+        </div>
+      </div>
+    </div>`;
+}
+function reportSeller(sellerId, sellerName){
+  const reason = prompt('Signaler le vendeur ' + sellerName + '\n\nDécrivez le problème (arnaque, fausse annonce, article non conforme...) :');
+  if(!reason || reason.trim().length < 10){ return; }
+  DB.addNotification('admin',
+    '🚨 SIGNALEMENT vendeur ' + sellerName + ' (ID:' + sellerId + ') — ' + reason.trim(),
+    'report'
+  );
+  showToast('Signalement envoyé à l\'équipe Vendora-sn. Nous enquêtons sous 24h. Merci.', 'success');
+}
+function switchImg(el,src){const m=document.getElementById('mainImg');if(m){m.style.opacity='0';setTimeout(()=>{m.src=src;m.style.opacity='1';},150);}document.querySelectorAll('.gallery-thumb').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
+function addProdToCart(){const r=DB.addToCart(currentProduct.id);if(r?.error){showToast(r.error,'error');return;}updateCartBadge();openCartDrawer();showToast(`${currentProduct.name} ajouté au panier ✓`,'success');}
+// ── SIGNALEMENT ──
+function openReportModal(){
+  document.getElementById('reportModalWrap')?.remove();
+  const wrap=document.createElement('div');
+  wrap.id='reportModalWrap';
+  wrap.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem';
+  wrap.innerHTML=`
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;max-width:420px;width:100%;padding:2rem">
+      <p style="font-family:var(--font-sub);font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:#EF4444;margin-bottom:.5rem">Signaler l'annonce</p>
+      <h3 style="font-size:1.1rem;font-family:var(--font-sub);font-weight:700;margin-bottom:1.25rem">Quel est le problème ?</h3>
+      <div id="reportOptions" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.25rem">
+        ${['Article inexistant ou fausse annonce','Prix trompeur ou arnaque','Photos ne correspondent pas à l\'article','Vendeur injoignable','Article déjà vendu mais toujours publié','Autre'].map(r=>`
+          <label style="display:flex;align-items:center;gap:.65rem;padding:.65rem .85rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;font-size:.82rem;transition:border-color .2s" onmouseover="this.style.borderColor='#EF4444'" onmouseout="this.style.borderColor='var(--border)'">
+            <input type="radio" name="reportReason" value="${r}" style="accent-color:#EF4444"> ${r}
+          </label>`).join('')}
+      </div>
+      <textarea id="reportDetail" class="form-input" rows="2" placeholder="Détails supplémentaires (optionnel)..." style="margin-bottom:1rem;resize:none"></textarea>
+      <div style="display:flex;gap:.65rem">
+        <button onclick="submitReport()" style="flex:1;background:#EF4444;color:#fff;border:none;padding:.82rem;font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;font-family:var(--font-sub);border-radius:var(--r);cursor:pointer">Envoyer le signalement</button>
+        <button onclick="document.getElementById('reportModalWrap').remove()" style="background:transparent;border:1px solid var(--border2);color:var(--text3);padding:.82rem 1.2rem;font-size:.68rem;font-family:var(--font-sub);border-radius:var(--r);cursor:pointer">Annuler</button>
+      </div>
+    </div>`;
+  wrap.addEventListener('click',e=>{if(e.target===wrap)wrap.remove();});
+  document.body.appendChild(wrap);
+}
+function submitReport(){
+  const reason=document.querySelector('input[name="reportReason"]:checked')?.value;
+  if(!reason){showToast('Choisissez un motif','error');return;}
+  const detail=document.getElementById('reportDetail').value.trim();
+  DB.addNotification('admin',
+    `🚩 SIGNALEMENT — Article #${currentProduct.id} "${currentProduct.name}" — Motif: ${reason}${detail?' | Détail: '+detail:''}`,
+    'report'
+  );
+  document.getElementById('reportModalWrap').remove();
+  showToast('Signalement envoyé. Merci de nous aider à sécuriser la plateforme. 🛡️','success');
+}
+
+function renderRelated(){const all=DB.getProducts('approved');const r=all.filter(p=>p.id!==currentProduct.id&&p.category===currentProduct.category).slice(0,4);if(r.length){document.getElementById('relatedSection').style.display='block';document.getElementById('relatedGrid').innerHTML=r.map(p=>productCardV2(p)).join('');requestAnimationFrame(()=>initFadeInCards());}}
+function renderSellerMore(){
+  const all=DB.getProductsBySeller(currentProduct.sellerId).filter(p=>p.status==='approved'&&p.id!==currentProduct.id).slice(0,4);
+  if(all.length){
+    document.getElementById('sellerMoreSection').style.display='block';
+    document.getElementById('sellerMoreGrid').innerHTML=all.map(p=>productCardV2(p)).join('');
+    requestAnimationFrame(()=>initFadeInCards());
+  }
+  renderRecentlyViewed('rvGrid');
+}
+
+// ── SHARE ──
+function shareProduct(){
+  const url=window.location.href;
+  if(navigator.share){navigator.share({title:currentProduct.name,text:`${currentProduct.name} — ${formatPrice(currentProduct.price)} sur Vendora-sn`,url}).catch(()=>{});}
+  else{navigator.clipboard?.writeText(url).then(()=>showToast('Lien copié ! 🔗','success')).catch(()=>showToast('Lien : '+url,'success'));}
+}
+function shareProductWA(){
+  const url=window.location.href;
+  const text=encodeURIComponent(`🛍️ *${currentProduct.name}*\n💰 ${formatPrice(currentProduct.price)}\n\nVoir l'article sur Vendora-sn : ${url}`);
+  window.open(`https://wa.me/?text=${text}`,'_blank');
+}
+
+// ── REVIEWS ──
+let selectedStar=0;
+function toggleReviewForm(){
+  const f=document.getElementById('reviewForm');
+  f.style.display=f.style.display==='none'?'block':'none';
+}
+function pickStar(n){
+  selectedStar=n;
+  document.querySelectorAll('.star-btn').forEach((b,i)=>{
+    b.classList.toggle('active',i<n);
+  });
+}
+function submitReview(){
+  const name=document.getElementById('reviewName').value.trim();
+  const text=document.getElementById('reviewText').value.trim();
+  if(!selectedStar){showToast('Choisissez une note','error');return;}
+  if(!name){showToast('Entrez votre prénom','error');return;}
+  if(!text||text.length<10){showToast('L\'avis doit faire au moins 10 caractères','error');return;}
+  const seller=DB.getUser(currentProduct.sellerId);
+  const result=DB.addReview({productId:currentProduct.id,sellerId:currentProduct.sellerId,buyerName:name,text,rating:selectedStar});
+  if(result?.error){showToast(result.error,'error');return;}
+  showToast('Avis publié ! Merci 🙏','success');
+  document.getElementById('reviewForm').style.display='none';
+  document.getElementById('reviewName').value='';
+  document.getElementById('reviewText').value='';
+  selectedStar=0;
+  document.querySelectorAll('.star-btn').forEach(b=>b.classList.remove('active'));
+  // Re-render product to show updated seller rating
+  renderProduct();
+  renderReviews();
+}
+function renderReviews(){
+  const reviews=DB.getReviewsByProduct(currentProduct.id);
+  const el=document.getElementById('reviewsList');
+  if(!reviews.length){
+    el.innerHTML='<p style="font-size:.82rem;color:var(--muted);text-align:center;padding:2rem 0">Aucun avis pour l\'instant. Soyez le premier !</p>';
+    return;
+  }
+  const avg=reviews.reduce((s,r)=>s+r.rating,0)/reviews.length;
+  el.innerHTML=`
+    <div class="reviews-summary">
+      <span class="reviews-avg">${avg.toFixed(1)}</span>
+      <div>
+        <div class="reviews-stars">${'★'.repeat(Math.round(avg))}${'☆'.repeat(5-Math.round(avg))}</div>
+        <span style="font-size:.72rem;color:var(--muted)">${reviews.length} avis</span>
+      </div>
+    </div>
+    <div class="reviews-list">
+      ${reviews.slice().reverse().map(r=>`
+        <div class="review-card">
+          <div class="review-header">
+            <div class="review-avatar">${r.buyerName[0].toUpperCase()}</div>
+            <div>
+              <p class="review-name">${escHtml(r.buyerName)}</p>
+              <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
+            </div>
+            <span class="review-date">${timeAgo(r.createdAt)}</span>
+          </div>
+          <p class="review-text">${escHtml(r.text)}</p>
+        </div>
+      `).join('')}
+    </div>`;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commandes — Admin Vendora-sn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script>(function(){var t=localStorage.getItem("dfm_theme")||"dark";document.documentElement.setAttribute("data-theme",t);})();</script>
+<link rel="stylesheet" href="../assets/style.css?v=18">
+</head>
+<body>
+<div class="admin-layout">
+  <div id="admin-sidebar-placeholder"></div>
+  <main class="admin-main">
+    <div class="admin-header"><h1>COMMANDES</h1></div>
+    <div class="search-bar"><input type="text" class="search-input" id="searchInput" placeholder="Réf, client..." oninput="filter()"><select class="status-select" id="statusFilter" onchange="filter()"><option value="">Tous</option><option value="pending">En attente</option><option value="confirmed">Confirmées</option><option value="shipped">Expédiées</option><option value="delivered">Livrées</option><option value="cancelled">Annulées</option></select></div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Référence</th><th>Article</th><th>Client</th><th>Vendeur</th><th>Paiement</th><th>Total</th><th>Statut</th><th>Date</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+<div id="toast-container"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/db.js?v=18"></script><script src="../assets/auth.js?v=18"></script><script src="../assets/config.js?v=18"></script><script src="../assets/ui.js?v=18"></script><script src="admin-ui.js?v=18"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{if(!Auth.requireAdmin())return;loadAdminSidebar('commandes');filter();});
+const sl={pending:'badge-pending',confirmed:'badge-approved',shipped:'badge-approved',delivered:'badge-approved',cancelled:'badge-rejected'};
+const st={pending:'En attente',confirmed:'Confirmée',shipped:'Expédiée',delivered:'Livrée',cancelled:'Annulée'};
+function filter(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const s=document.getElementById('statusFilter').value;
+  let orders=DB.getOrders();
+  if(q)orders=orders.filter(o=>o.ref.toLowerCase().includes(q)||(`${o.firstName} ${o.lastName}`).toLowerCase().includes(q));
+  if(s)orders=orders.filter(o=>o.status===s);
+  const tbody=document.getElementById('tbody');
+  if(!orders.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:3rem">Aucune commande</td></tr>';return;}
+  const seller=id=>DB.getUser(id)?.name||'—';
+  tbody.innerHTML=[...orders].reverse().map(o=>`<tr>
+    <td style="color:var(--accent,var(--red));font-family:var(--font-display);font-size:.9rem;letter-spacing:.04em">${o.ref}</td>
+    <td style="font-size:.78rem;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.productName||'—'}</td>
+    <td style="font-size:.78rem">${o.firstName} ${o.lastName}<br><span style="color:var(--muted);font-size:.65rem">${o.phone}</span></td>
+    <td style="font-size:.75rem;color:var(--muted)">${seller(o.sellerId)}</td>
+    <td style="font-size:.75rem">${o.payment==='wave'?'🌊 Wave':'🟠 OM'}</td>
+    <td style="color:var(--accent,var(--red));font-family:var(--font-display);letter-spacing:.04em">${formatPrice(o.total)}</td>
+    <td><span class="badge ${sl[o.status]||'badge-pending'}">${st[o.status]||o.status}</span></td>
+    <td style="font-size:.7rem;color:var(--muted)">${new Date(o.createdAt).toLocaleDateString('fr-FR')}</td>
+  </tr>`).join('');
+}
+</script>
+</body>
+</html>

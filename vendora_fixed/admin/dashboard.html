@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Vendora-sn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script>(function(){var t=localStorage.getItem("dfm_theme")||"dark";document.documentElement.setAttribute("data-theme",t);})();</script>
+<link rel="stylesheet" href="../assets/style.css?v=18">
+</head>
+<body>
+<div class="admin-layout">
+  <div id="admin-sidebar-placeholder"></div>
+  <main class="admin-main">
+    <div class="admin-header">
+      <img src="../assets/images/Vendora-logo.png" alt="Vendora-sn" style="height:100px;width:auto;object-fit:contain;">
+      <button onclick="Auth.logout()" class="btn-danger" style="font-size:.68rem">Déconnexion</button>
+    </div>
+    <div class="admin-stats-grid" id="statsGrid"></div>
+    <div id="pendingSection"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem" id="recentSection"></div>
+  </main>
+</div>
+<div id="toast-container"></div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../assets/db.js?v=18"></script><script src="../assets/auth.js?v=18"></script><script src="../assets/config.js?v=18"></script><script src="../assets/ui.js?v=18"></script>
+<script src="admin-ui.js?v=18"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  if(!Auth.requireAdmin())return;
+  loadAdminSidebar('dashboard');
+  const products=DB.getAllProducts();
+  const sellers=DB.getSellers();
+  const orders=DB.getOrders();
+  const pending=products.filter(p=>p.status==='pending_payment');
+  const approved=products.filter(p=>p.status==='approved');
+  const newOrders=orders.filter(o=>o.status==='pending');
+  const totalComm=products.filter(p=>p.commissionPaid&&!p.isFirstPub).reduce((s,p)=>s+(p.commissionAmount||0),0);
+  document.getElementById('statsGrid').innerHTML=`
+    <div class="stat-card"><p class="stat-label">Articles en ligne</p><p class="stat-value">${approved.length}</p></div>
+    <div class="stat-card"><p class="stat-label">En attente paiement</p><p class="stat-value" style="color:var(--gold)">${pending.length}</p></div>
+    <div class="stat-card"><p class="stat-label">Vendeurs actifs</p><p class="stat-value">${sellers.filter(s=>s.status==='active').length}</p></div>
+    <div class="stat-card"><p class="stat-label">Commandes</p><p class="stat-value">${orders.length}${newOrders.length>0?`<span class="new-badge">${newOrders.length}</span>`:''}</p></div>
+    <div class="stat-card"><p class="stat-label">Commissions perçues</p><p class="stat-value">${totalComm.toLocaleString('fr-FR')}</p><p class="stat-sub">FCFA</p></div>`;
+  // Pending payment articles
+  if(pending.length){
+    document.getElementById('pendingSection').innerHTML=`
+      <div class="alert-banner"><p>⚠️ ${pending.length} article${pending.length>1?'s':''} en attente de paiement de commission</p><a href="articles.html?status=pending_payment" style="color:var(--accent,var(--red));font-size:.72rem;font-family:var(--font-sub);letter-spacing:.1em;margin-left:auto">VOIR →</a></div>`;
+  }
+  // Recent orders
+  const recent=orders.slice(-5).reverse();
+  if(recent.length){
+    document.getElementById('recentSection').innerHTML=`
+      <div><h3 style="font-family:var(--font-display);font-size:1.1rem;letter-spacing:.05em;color:var(--accent,var(--red));margin-bottom:1rem">DERNIÈRES COMMANDES</h3>
+        ${recent.map(o=>`<div style="background:var(--black2);border:1px solid var(--border-n);padding:.75rem;border-radius:4px;margin-bottom:.55rem;font-size:.78rem">
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--accent,var(--red));font-family:var(--font-sub)">${o.ref}</span><span class="badge ${o.status==='pending'?'badge-pending':'badge-approved'}">${o.status}</span></div>
+          <p style="color:var(--muted);font-size:.7rem;margin-top:.2rem">${o.firstName} ${o.lastName} · ${formatPrice(o.total)}</p>
+        </div>`).join('')}
+      </div>
+      <div><h3 style="font-family:var(--font-display);font-size:1.1rem;letter-spacing:.05em;color:var(--accent,var(--red));margin-bottom:1rem">DERNIERS VENDEURS</h3>
+        ${sellers.slice(-5).reverse().map(s=>`<div style="background:var(--black2);border:1px solid var(--border-n);padding:.75rem;border-radius:4px;margin-bottom:.55rem;font-size:.78rem">
+          <div style="display:flex;justify-content:space-between"><span style="font-family:var(--font-sub);font-weight:700">${s.name}</span><span class="badge ${s.status==='active'?'badge-active':'badge-suspended'}">${s.status}</span></div>
+          <p style="color:var(--muted);font-size:.7rem;margin-top:.2rem">${s.email} · ${s.phone}</p>
+        </div>`).join('')}
+      </div>`;
+  }
+});
+</script>
+</body>
+</html>
